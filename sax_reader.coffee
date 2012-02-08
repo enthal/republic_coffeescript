@@ -16,7 +16,7 @@ exports.attach = (parser, first_delegate) ->
     push_delegate new_delegate if new_delegate?
     depth++
   parser.ontext = (text) ->
-    delegate.ontext(text) if delegate? and delegate.ontext? and not /\n */.test(text)
+    delegate.ontext(text) if delegate? and delegate.ontext? and not /^\n *$/.test(text)
   parser.onclosetag = (node) ->
     depth--
     delegate = delegate.last_delegate if depth <= delegate.start_depth
