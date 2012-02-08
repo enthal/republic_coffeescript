@@ -1,4 +1,3 @@
-log = console.log
 
 make_reader = (parser, first_delegate) ->
   delegate = null
@@ -13,7 +12,6 @@ make_reader = (parser, first_delegate) ->
 
   parser.onopentag = (node) ->
     new_delegate = delegate.onopentag(node) if delegate and delegate.onopentag?
-    log("new_delegate", new_delegate) if new_delegate?
     push_delegate new_delegate if new_delegate?
     depth++
   parser.ontext = (text) ->
@@ -26,6 +24,8 @@ make_reader = (parser, first_delegate) ->
   parser: parser
   depth: () -> depth
 
+
+log = console.log
 
 sax = require "../../sax-js/lib/sax.js"
 parser = sax.parser true
@@ -46,18 +46,3 @@ r = make_reader parser,
   ontext:     (text) -> log r.depth(), "TEXT:", text
 parser.write('<xml>Hello, <who name="there">what?<inner>¡olé!<bob>bro<sam/>yeah</bob>ok</inner>out!</who>!</xml>').close()
 
-
-xx = ()->
-  bob=10
-  bob++
-  a:1
-  b:bob
-  x:(xxx)->log(this, @b, xxx);@b
-log(xx())
-log(xx().x(1))
-z=xx()
-
-x1 = (x) -> log(x.x, x.y)
-x1
-  x:100
-  y:999
