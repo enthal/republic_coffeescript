@@ -2,7 +2,7 @@ log = console.log
 
 parser = require("sax").parser true
 
-make_reader = require("./reader").make_reader
+make_reader = require("./sax_reader").make_reader
 
 r = make_reader parser,
   onopentag:  (node) -> log r.depth(), "OPEN ", node
