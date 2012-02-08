@@ -11,7 +11,8 @@ exports.attach = (parser, first_delegate) ->
   push_delegate first_delegate
 
   parser.onopentag = (node) ->
-    new_delegate = delegate.onopentag(node) if delegate and delegate.onopentag?
+    new_delegate = null
+    delegate.onopentag(node, ((d) -> new_delegate = d)) if delegate and delegate.onopentag?
     push_delegate new_delegate if new_delegate?
     depth++
   parser.ontext = (text) ->
