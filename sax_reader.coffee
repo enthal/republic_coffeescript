@@ -1,5 +1,5 @@
 
-exports.make_reader = (parser, first_delegate) ->
+exports.attach = (parser, first_delegate) ->
   delegate = null
   depth = 0
 

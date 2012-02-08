@@ -2,15 +2,15 @@ log = console.log
 
 parser = require("sax").parser true
 
-make_reader = require("./sax_reader").make_reader
+sax_reader = require("./sax_reader")
 
-r = make_reader parser,
+r = sax_reader.attach parser,
   onopentag:  (node) -> log r.depth(), "OPEN ", node
   onclosetag: (name) -> log r.depth(), "CLOSE", name
   ontext:     (text) -> log r.depth(), "TEXT:", text
 parser.write('<xml>Hello, <who name="there">world</who>!</xml>').close()
 
-r = make_reader parser,
+r = sax_reader.attach parser,
   onopentag:  (node) ->
     log r.depth(), "OPEN ", node
     if node.name is "inner"
