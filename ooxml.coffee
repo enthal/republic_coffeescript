@@ -29,7 +29,9 @@ do_body = (push_delegate) ->
       "text:span": "span"
       "text:h":    "h1"
 
-    ontext:    (text) -> write_html_line f, text
+    ontext:    (text) ->
+      write_html_line f, text
+
     onopentag: (node, push_delegate) ->
       ln = html_tags_by_name[node.name]
       if ln
@@ -37,16 +39,23 @@ do_body = (push_delegate) ->
       else switch node.name
         when "text:note"
           push_delegate make_note_delegate()
-        #when "text:note-ref"
-        #  do_note_ref
+        when "text:note-ref"
+          write_html_line f_note, "<A href='\##{node.attributes["text:ref-name"]}'>"
+          push_delegate make_body_delegate(f_note)
+
     onclosetag: (name) ->
       ln = html_tags_by_name[name]
-      write_html_line f, "</#{ln}>" if ln
+      if ln
+        write_html_line f, "</#{ln}>"
+      else switch name
+        when "text:note-ref"
+          write_html_line f_note, "</A>"
 
   make_note_delegate = ->
     ontext:    (text) ->
       text = text.trim()
       write_html_line f, text for f in [f_text, f_note]
+
     onopentag: (node, push_delegate) ->
       note_id = @base_node.attributes['text:id']
       switch node.name
@@ -55,6 +64,7 @@ do_body = (push_delegate) ->
           write_html_line f_note, "<div><a href='text.html\##{note_id}' name='#{note_id}'><b>"
         when "text:note-body"
           push_delegate make_body_delegate(f_note)
+
     onclosetag: (name) ->
       switch name
         when "text:note-citation"
