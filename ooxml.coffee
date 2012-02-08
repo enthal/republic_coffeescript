@@ -24,10 +24,15 @@ do_body = (push_delegate) ->
   f_note = fs.openSync("OUT/notes.html", "w+")
 
   make_body_delegate = (f) ->
+    html_tags_by_name =
+      "text:p":    "p"
+      "text:span": "span"
+      "text:h":    "h1"
+
     ontext:    (text) -> write_html_line f, text
     onopentag: (node, push_delegate) ->
-      ln = local_name(node.name)
-      if ln in ["p", "span"]
+      ln = html_tags_by_name[node.name]
+      if ln
         write_html_line f, "\n<#{ln}>"
       else switch node.name
         when "text:note"
@@ -35,8 +40,8 @@ do_body = (push_delegate) ->
         #when "text:note-ref"
         #  do_note_ref
     onclosetag: (name) ->
-      ln = local_name(name)
-      write_html_line f, "</#{ln}>" if ln in ["p", "span"]
+      ln = html_tags_by_name[name]
+      write_html_line f, "</#{ln}>" if ln
 
   make_note_delegate = ->
     ontext:    (text) ->
