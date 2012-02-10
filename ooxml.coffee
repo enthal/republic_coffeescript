@@ -13,15 +13,24 @@ reader = sax_reader.attach parser,
 
     push_delegate
       onopentag: (node, push_delegate) ->
-        if node.name is "office:body"
-          do_body push_delegate
-        else
-          push_delegate {}
+        switch node.name
+          when "office:styles"
+            do_styles push_delegate
+          when "office:body"
+            do_body push_delegate
+          else
+            push_delegate {}  # skip subtree
+
+do_styles = (push_delegate) ->
+  try fs.mkdirSync("OUT")
+  f = fs.openSync("OUT/css.css", "w+")
+  write_to f, ".Stephanus_20_Number { color: blue; }"
 
 do_body = (push_delegate) ->
   try fs.mkdirSync("OUT")
   f_text = fs.openSync("OUT/text.html",  "w+")
   f_note = fs.openSync("OUT/notes.html", "w+")
+  write_to f, '<link rel="stylesheet" type="text/css" href="css.css">' for f in [f_text, f_note]
 
   make_body_delegate = (f) ->
     html_tags_by_name =
