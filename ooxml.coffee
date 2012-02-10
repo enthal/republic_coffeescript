@@ -35,7 +35,8 @@ do_body = (push_delegate) ->
     onopentag: (node, push_delegate) ->
       ln = html_tags_by_name[node.name]
       if ln
-        write_to f, "\n<#{ln}>"
+        space = if ln is "span" then "" else "\n"  # Only allow extra ws around block element tags, else browser shows it
+        write_to f, "#{space}<#{ln}>"
       else switch node.name
         when "text:note"
           push_delegate make_note_delegate()
@@ -61,7 +62,7 @@ do_body = (push_delegate) ->
       switch node.name
         when "text:note-citation"
           write_to f_text, "<A href='notes.html\##{note_id}' name='#{note_id}'>"
-          write_to f_note, "<div><a href='text.html\##{note_id}' name='#{note_id}'><b>"
+          write_to f_note, "\n<div>\n<a href='text.html\##{note_id}' name='#{note_id}'><b>"
         when "text:note-body"
           push_delegate make_body_delegate(f_note)
 
@@ -71,7 +72,7 @@ do_body = (push_delegate) ->
           write_to f_text, "</A>"
           write_to f_note, "</b></a>"
         when "text:note-body"
-          write_to f_note, "</div>"
+          write_to f_note, "\n</div>\n"
 
   push_delegate make_body_delegate(f_text)
 
