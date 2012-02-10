@@ -11,20 +11,30 @@ try fs.mkdirSync("OUT")
 reader = sax_reader.attach parser,
   onopentag: (node, push_delegate) ->
     throw "Need: <office:document> not <#{node.name}>" unless node.name is "office:document"
+    f_css = fs.openSync("OUT/css.css", "w+")
 
     push_delegate
       onopentag: (node, push_delegate) ->
         switch node.name
           when "office:styles", "office:automatic-styles"
-            do_styles push_delegate
+            do_styles f_css, push_delegate
           when "office:body"
             do_body push_delegate
           else
             push_delegate {}  # skip subtree
 
-do_styles = (push_delegate) ->
-  f_css = fs.openSync("OUT/css.css", "w+")
-  write_to f_css, ".Stephanus_20_Number { color: blue; }"
+do_styles = (f_css, push_delegate) ->
+  push_delegate
+    onopentag: (node, push_delegate) ->
+      if node.name is "style:style"
+        style_name = node.attributes["style:name"]
+        push_delegate
+          onenter: (node) -> write_line_to f_css, ".#{style_name} {"
+          onleave:        -> write_line_to f_css, "}"
+          onopentag: (node) ->
+            for n,v of node.attributes
+              m = n.match /^fo:(.*)/
+              write_line_to f_css, "  #{m[1]}: #{v};"  if m
 
 do_body = (push_delegate) ->
   f_text = fs.openSync("OUT/text.html",  "w+")
