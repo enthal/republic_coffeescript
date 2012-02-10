@@ -8,6 +8,8 @@ sax_reader = require("./sax_reader")
 
 try fs.mkdirSync("OUT")
 
+font_families_by_style_name = {}
+
 reader = sax_reader.attach parser,
   onopentag: (node, push_delegate) ->
     throw "Need: <office:document> not <#{node.name}>" unless node.name is "office:document"
@@ -16,12 +18,21 @@ reader = sax_reader.attach parser,
     push_delegate
       onopentag: (node, push_delegate) ->
         switch node.name
+          when "office:font-face-decls"
+            do_font_face_decls push_delegate
           when "office:styles", "office:automatic-styles"
             do_styles f_style, push_delegate
           when "office:body"
             do_body push_delegate
           else
             push_delegate {}  # skip subtree
+
+do_font_face_decls = (push_delegate) ->
+  push_delegate
+    onopentag: (node, push_delegate) ->
+      if node.name is "style:font-face"
+        nas = node.attributes
+        font_families_by_style_name[nas["style:name"]] = nas["svg:font-family"]
 
 do_styles = (f_style, push_delegate) ->
   push_delegate
@@ -33,13 +44,14 @@ do_styles = (f_style, push_delegate) ->
             write_line_to f_style, ".#{style_name} {"
             parent_style_name = node.attributes["style:parent-style-name"]
             write_line_to f_style, "  .#{parent_style_name};"  if parent_style_name
-          onleave:        ->
+          onleave: ->
             write_line_to f_style, "}\n"
           onopentag: (node) ->
             for n,v of node.attributes
               m = n.match /^fo:(.*)/
               write_line_to f_style, "  #{m[1]}: #{v};"  if m
-              write_line_to f_style, "  font-family: \"#{v}\";" if n is "style:font-name"
+              font_family = font_families_by_style_name[v]
+              write_line_to f_style, "  font-family: #{font_family};" if n is "style:font-name"
 
 do_body = (push_delegate) ->
   f_text = fs.openSync("OUT/text.html",  "w+")
@@ -127,8 +139,8 @@ local_name = (name) ->
   m = /.*:(.*)/.exec(name)
   m? and m[1] or name
 
-write_to = (f, s) -> fs.writeSync f, s
-write_line_to = (f, s) -> write_to f, s + "\n"
+write_to      = (f, s) -> fs.writeSync f, s
+write_line_to = (f, s) -> fs.writeSync f, s + "\n"
 
 log process.argv
 xml_str = fs.readFileSync(process.argv[2])
