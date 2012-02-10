@@ -15,6 +15,8 @@ r = sax_reader.attach parser,
     log r.depth(), "OPEN ", node
     if node.name is "inner"
       push_delegate
+        onenter:    (node) -> log "INNER! ENTER", node
+        onleave:    (name) -> log "INNER! LEAVE", name
         onopentag:  (node) -> log "INNER!", node
         onclosetag: (name) -> log "INNER!", "CLOSE", name
         ontext:     (text) -> log "INNER!", text

@@ -7,45 +7,29 @@ parser = require("sax").parser true
 sax_reader = require("./sax_reader")
 
 try fs.mkdirSync("OUT")
-f_text = fs.openSync("OUT/text.html",  "w+")
-f_note = fs.openSync("OUT/notes.html", "w+")
 
 reader = sax_reader.attach parser,
   onopentag: (node, push_delegate) ->
     throw "Need: <office:document> not <#{node.name}>" unless node.name is "office:document"
 
-    for f in [f_text, f_note]
-      write_line_to f, "<HTML>"
-      write_line_to f, "<HEAD>"
-      write_line_to f, '  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">'
-      write_line_to f, '  <link rel="stylesheet" type="text/css" href="css.css">'
-      write_line_to f, "</HEAD>"
-      write_line_to f, "<BODY>"
-
     push_delegate
       onopentag: (node, push_delegate) ->
         switch node.name
-          when "office:styles"
+          when "office:styles", "office:automatic-styles"
             do_styles push_delegate
           when "office:body"
             do_body push_delegate
           else
             push_delegate {}  # skip subtree
 
-  onclosetag: (name) ->
-    throw "Need: </office:document> not <#{name}>" unless name is "office:document"
-
-    for f in [f_text, f_note]
-      write_line_to f, "\n"
-      write_line_to f, "</BODY>"
-      write_line_to f, "</HTML>"
-
 do_styles = (push_delegate) ->
-  try fs.mkdirSync("OUT")
-  f = fs.openSync("OUT/css.css", "w+")
-  write_to f, ".Stephanus_20_Number { color: blue; }"
+  f_css = fs.openSync("OUT/css.css", "w+")
+  write_to f_css, ".Stephanus_20_Number { color: blue; }"
 
 do_body = (push_delegate) ->
+  f_text = fs.openSync("OUT/text.html",  "w+")
+  f_note = fs.openSync("OUT/notes.html", "w+")
+
   make_body_delegate = (f) ->
     html_tags_by_name =
       "text:p":    "p"
@@ -102,7 +86,26 @@ do_body = (push_delegate) ->
         when "text:note-body"
           write_to f_note, "\n</div>\n"
 
-  push_delegate make_body_delegate(f_text)
+  do ->
+    outer_body_delegate = make_body_delegate(f_text)
+
+    outer_body_delegate.onenter = ->
+      for f in [f_text, f_note]
+        write_line_to f, "<HTML>"
+        write_line_to f, "<HEAD>"
+        write_line_to f, '  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">'
+        write_line_to f, '  <link rel="stylesheet" type="text/css" href="css.css">'
+        write_line_to f, "</HEAD>"
+        write_line_to f, "<BODY>"
+
+    outer_body_delegate.onleave = ->
+      for f in [f_text, f_note]
+        write_line_to f, "\n"
+        write_line_to f, "</BODY>"
+        write_line_to f, "</HTML>"
+
+    push_delegate outer_body_delegate
+
 
 local_name = (name) ->
   m = /.*:(.*)/.exec(name)
