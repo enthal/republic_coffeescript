@@ -1,15 +1,26 @@
 #! /usr/bin/env coffee
 
+fs = require "fs"
 log = console.log
-
 parser = require("sax").parser true
 
 sax_reader = require("./sax_reader")
 
+try fs.mkdirSync("OUT")
+f_text = fs.openSync("OUT/text.html",  "w+")
+f_note = fs.openSync("OUT/notes.html", "w+")
+
 reader = sax_reader.attach parser,
   onopentag:  (node, push_delegate) ->
-    #log reader.depth(), "OPEN ", node
-    throw "Need: <office:document>" unless node.name is "office:document"
+    throw "Need: <office:document> not <#{node.name}>" unless node.name is "office:document"
+
+    for f in [f_text, f_note]
+      write_line_to f, "<HTML>"
+      write_line_to f, "<HEAD>"
+      write_line_to f, '  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">'
+      write_line_to f, '  <link rel="stylesheet" type="text/css" href="css.css">'
+      write_line_to f, "</HEAD>"
+      write_line_to f, "<BODY>"
 
     push_delegate
       onopentag: (node, push_delegate) ->
@@ -21,17 +32,20 @@ reader = sax_reader.attach parser,
           else
             push_delegate {}  # skip subtree
 
+  onclosetag: (name) ->
+    throw "Need: </office:document> not <#{name}>" unless name is "office:document"
+
+    for f in [f_text, f_note]
+      write_line_to f, "\n"
+      write_line_to f, "</BODY>"
+      write_line_to f, "</HTML>"
+
 do_styles = (push_delegate) ->
   try fs.mkdirSync("OUT")
   f = fs.openSync("OUT/css.css", "w+")
   write_to f, ".Stephanus_20_Number { color: blue; }"
 
 do_body = (push_delegate) ->
-  try fs.mkdirSync("OUT")
-  f_text = fs.openSync("OUT/text.html",  "w+")
-  f_note = fs.openSync("OUT/notes.html", "w+")
-  write_to f, '<link rel="stylesheet" type="text/css" href="css.css">' for f in [f_text, f_note]
-
   make_body_delegate = (f) ->
     html_tags_by_name =
       "text:p":    "p"
@@ -95,9 +109,8 @@ local_name = (name) ->
   m? and m[1] or name
 
 write_to = (f, s) -> fs.writeSync f, s
+write_line_to = (f, s) -> write_to f, s + "\n"
 
-
-fs = require "fs"
 log process.argv
 xml_str = fs.readFileSync(process.argv[2])
 parser.write(xml_str.toString()).close()
