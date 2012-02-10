@@ -11,7 +11,7 @@ f_text = fs.openSync("OUT/text.html",  "w+")
 f_note = fs.openSync("OUT/notes.html", "w+")
 
 reader = sax_reader.attach parser,
-  onopentag:  (node, push_delegate) ->
+  onopentag: (node, push_delegate) ->
     throw "Need: <office:document> not <#{node.name}>" unless node.name is "office:document"
 
     for f in [f_text, f_note]
@@ -52,7 +52,7 @@ do_body = (push_delegate) ->
       "text:span": "span"
       "text:h":    "h1"
 
-    ontext:    (text) ->
+    ontext: (text) ->
       write_to f, text
 
     onopentag: (node, push_delegate) ->
@@ -81,7 +81,7 @@ do_body = (push_delegate) ->
           write_to f_note, "</A>"
 
   make_note_delegate = ->
-    ontext:    (text) ->
+    ontext: (text) ->
       text = text.trim()
       write_to f, text for f in [f_text, f_note]
 
