@@ -35,10 +35,13 @@ do_body = (push_delegate) ->
     onopentag: (node, push_delegate) ->
       tag_name = html_tags_by_name[node.name]
       if tag_name
-        space = if tag_name is "span" then "" else "\n"  # Only allow extra ws around block element tags, else browser shows it
         style_name = node.attributes["text:style-name"]
-        classing = if style_name then " class='#{style_name}'" else ""
-        write_to f, "#{space}<#{tag_name}#{classing}>"
+        tag = ""
+        tag += "\n" unless tag_name is "span"  # Only allow extra ws around block element tags, else browser shows it
+        tag += "<#{tag_name}"
+        tag += " class='#{style_name}'" if style_name
+        tag += ">"
+        write_to f, tag
       else switch node.name
         when "text:note"
           push_delegate make_note_delegate()
