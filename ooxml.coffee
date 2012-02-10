@@ -30,48 +30,48 @@ do_body = (push_delegate) ->
       "text:h":    "h1"
 
     ontext:    (text) ->
-      write_html_line f, text
+      write_to f, text
 
     onopentag: (node, push_delegate) ->
       ln = html_tags_by_name[node.name]
       if ln
-        write_html_line f, "\n<#{ln}>"
+        write_to f, "\n<#{ln}>"
       else switch node.name
         when "text:note"
           push_delegate make_note_delegate()
         when "text:note-ref"
-          write_html_line f_note, "<A href='\##{node.attributes["text:ref-name"]}'>"
+          write_to f_note, "<A href='\##{node.attributes["text:ref-name"]}'>"
           push_delegate make_body_delegate(f_note)
 
     onclosetag: (name) ->
       ln = html_tags_by_name[name]
       if ln
-        write_html_line f, "</#{ln}>"
+        write_to f, "</#{ln}>"
       else switch name
         when "text:note-ref"
-          write_html_line f_note, "</A>"
+          write_to f_note, "</A>"
 
   make_note_delegate = ->
     ontext:    (text) ->
       text = text.trim()
-      write_html_line f, text for f in [f_text, f_note]
+      write_to f, text for f in [f_text, f_note]
 
     onopentag: (node, push_delegate) ->
       note_id = @base_node.attributes['text:id']
       switch node.name
         when "text:note-citation"
-          write_html_line f_text, "<A href='notes.html\##{note_id}' name='#{note_id}'>"
-          write_html_line f_note, "<div><a href='text.html\##{note_id}' name='#{note_id}'><b>"
+          write_to f_text, "<A href='notes.html\##{note_id}' name='#{note_id}'>"
+          write_to f_note, "<div><a href='text.html\##{note_id}' name='#{note_id}'><b>"
         when "text:note-body"
           push_delegate make_body_delegate(f_note)
 
     onclosetag: (name) ->
       switch name
         when "text:note-citation"
-          write_html_line f_text, "</A>"
-          write_html_line f_note, "</b></a>"
+          write_to f_text, "</A>"
+          write_to f_note, "</b></a>"
         when "text:note-body"
-          write_html_line f_note, "</div>"
+          write_to f_note, "</div>"
 
   push_delegate make_body_delegate(f_text)
 
@@ -79,7 +79,7 @@ local_name = (name) ->
   m = /.*:(.*)/.exec(name)
   m? and m[1] or name
 
-write_html_line = (f, s) -> fs.writeSync f, s
+write_to = (f, s) -> fs.writeSync f, s
 
 
 fs = require "fs"
