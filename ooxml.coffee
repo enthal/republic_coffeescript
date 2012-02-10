@@ -11,31 +11,35 @@ try fs.mkdirSync("OUT")
 reader = sax_reader.attach parser,
   onopentag: (node, push_delegate) ->
     throw "Need: <office:document> not <#{node.name}>" unless node.name is "office:document"
-    f_css = fs.openSync("OUT/css.css", "w+")
+    f_style = fs.openSync("OUT/styles.less", "w+")
 
     push_delegate
       onopentag: (node, push_delegate) ->
         switch node.name
           when "office:styles", "office:automatic-styles"
-            do_styles f_css, push_delegate
+            do_styles f_style, push_delegate
           when "office:body"
             do_body push_delegate
           else
             push_delegate {}  # skip subtree
 
-do_styles = (f_css, push_delegate) ->
+do_styles = (f_style, push_delegate) ->
   push_delegate
     onopentag: (node, push_delegate) ->
       if node.name is "style:style"
         style_name = node.attributes["style:name"]
         push_delegate
-          onenter: (node) -> write_line_to f_css, ".#{style_name} {"
-          onleave:        -> write_line_to f_css, "}"
+          onenter: (node) ->
+            write_line_to f_style, ".#{style_name} {"
+            parent_style_name = node.attributes["style:parent-style-name"]
+            write_line_to f_style, "  .#{parent_style_name};"  if parent_style_name
+          onleave:        ->
+            write_line_to f_style, "}\n"
           onopentag: (node) ->
             for n,v of node.attributes
               m = n.match /^fo:(.*)/
-              write_line_to f_css, "  #{m[1]}: #{v};"  if m
-              write_line_to f_css, "  font-family: \"#{v}\";" if n is "style:font-name"
+              write_line_to f_style, "  #{m[1]}: #{v};"  if m
+              write_line_to f_style, "  font-family: \"#{v}\";" if n is "style:font-name"
 
 do_body = (push_delegate) ->
   f_text = fs.openSync("OUT/text.html",  "w+")
@@ -105,7 +109,8 @@ do_body = (push_delegate) ->
         write_line_to f, "<HTML>"
         write_line_to f, "<HEAD>"
         write_line_to f, '  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">'
-        write_line_to f, '  <link rel="stylesheet" type="text/css" href="css.css">'
+        write_line_to f, '  <link rel="stylesheet/less" type="text/css" href="styles.less">'
+        write_line_to f, '  <script src="less-1.2.1.min.js" type="text/javascript"></script>'
         write_line_to f, "</HEAD>"
         write_line_to f, "<BODY>"
 
