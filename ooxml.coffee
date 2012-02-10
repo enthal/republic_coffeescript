@@ -35,6 +35,7 @@ do_styles = (f_css, push_delegate) ->
             for n,v of node.attributes
               m = n.match /^fo:(.*)/
               write_line_to f_css, "  #{m[1]}: #{v};"  if m
+              write_line_to f_css, "  font-family: \"#{v}\";" if n is "style:font-name"
 
 do_body = (push_delegate) ->
   f_text = fs.openSync("OUT/text.html",  "w+")
