@@ -7,6 +7,7 @@ parser = require("sax").parser true
 sax_reader = require("./sax_reader")
 
 try fs.mkdirSync("OUT")
+# TODO: copy file custom.less to OUT dir
 
 font_families_by_style_name = {}
 
@@ -80,7 +81,7 @@ do_body = (push_delegate) ->
         when "text:note"
           push_delegate make_note_delegate()
         when "text:note-ref"
-          write_to f_note, "<A href='\##{node.attributes["text:ref-name"]}'>"
+          write_to f_note, "<A href='\##{node.attributes["text:ref-name"]}' class='CONV-note-reference'>"
           push_delegate make_body_delegate(f_note)
 
     onclosetag: (name) ->
@@ -100,8 +101,8 @@ do_body = (push_delegate) ->
       note_id = @base_node.attributes['text:id']
       switch node.name
         when "text:note-citation"
-          write_to f_text, "<A href='notes.html\##{note_id}' name='#{note_id}'>"
-          write_to f_note, "\n<div>\n<a href='text.html\##{note_id}' name='#{note_id}'><b>"
+          write_to f_text, "<A href='notes.html\##{note_id}' name='#{note_id}' class='CONV-note-reference'>"
+          write_to f_note, "\n<div>\n<A href='text.html\##{note_id}' name='#{note_id}' class='CONV-note-identifier'>"
         when "text:note-body"
           push_delegate make_body_delegate(f_note)
 
@@ -109,7 +110,7 @@ do_body = (push_delegate) ->
       switch name
         when "text:note-citation"
           write_to f_text, "</A>"
-          write_to f_note, "</b></a>"
+          write_to f_note, "</A>"
         when "text:note-body"
           write_to f_note, "\n</div>\n"
 
@@ -122,6 +123,7 @@ do_body = (push_delegate) ->
         write_line_to f, "<HEAD>"
         write_line_to f, '  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">'
         write_line_to f, '  <link rel="stylesheet/less" type="text/css" href="styles.less">'
+        write_line_to f, '  <link rel="stylesheet/less" type="text/css" href="custom.less">'
         write_line_to f, '  <script src="less-1.2.1.min.js" type="text/javascript"></script>'
         write_line_to f, "</HEAD>"
         write_line_to f, "<BODY>"
