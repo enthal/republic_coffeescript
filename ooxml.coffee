@@ -124,7 +124,7 @@ do_body = (push_delegate) ->
         write_line_to f, '  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">'
         write_line_to f, '  <link rel="stylesheet/less" type="text/css" href="styles.less">'
         write_line_to f, '  <link rel="stylesheet/less" type="text/css" href="custom.less">'
-        write_line_to f, '  <script src="less-1.2.1.min.js" type="text/javascript"></script>'
+        write_line_to f, '  <script src="less-1.2.2.min.js" type="text/javascript"></script>'
         write_line_to f, "</HEAD>"
         write_line_to f, "<BODY>"
 
