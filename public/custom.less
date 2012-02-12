@@ -1,3 +1,4 @@
+
 a.CONV-note-identifier, a.CONV-note-reference {
   font-family: 'Gill Sans';
   text-decoration:none;
@@ -7,7 +8,24 @@ a.CONV-note-identifier, a.CONV-note-reference {
     color: red;
   }
 }
+
 a.CONV-note-reference {
   vertical-align: top;
-  font-size: 60%;
+  font-size: 70%;
+}
+
+.CONV-note {
+  padding-bottom: 1em;
+  text-indent: 1em;
+
+  div:first-of-type {
+    display: inline;
+  }
+  a.CONV-note-identifier {
+    vertical-align: top;
+    font-size: 75%;
+  }
+  a.CONV-note-reference {
+    font-size: 80%;
+  }
 }

@@ -58,9 +58,9 @@ do_body = (push_delegate) ->
 
   make_body_delegate = (f) ->
     html_tags_by_name =
-      "text:p":    "p"
+      "text:p":    "div"
       "text:span": "span"
-      "text:h":    "h1"
+      "text:h":    "div"
 
     ontext: (text) ->
       write_to f, text
@@ -100,7 +100,7 @@ do_body = (push_delegate) ->
       switch node.name
         when "text:note-citation"
           write_to f_text, "<A href='notes.html\##{note_id}' target='notes' name='#{note_id}' class='CONV-note-reference'>"
-          write_to f_note, "\n<div>\n"
+          write_to f_note, "\n<div class='CONV-note'>\n"
           write_to f_note, "<A href='text.html\##{note_id}' target='text' name='#{note_id}' class='CONV-note-identifier'>"
         when "text:note-body"
           push_delegate make_body_delegate(f_note)
@@ -117,7 +117,7 @@ do_body = (push_delegate) ->
     outer_body_delegate = make_body_delegate(f_text)
 
     outer_body_delegate.onenter = ->
-      for f in [f_text, f_note]
+      for f in [f_text, f_note, f_contents]
         write_line_to f, "<HTML>"
         write_line_to f, "<HEAD>"
         write_line_to f, '  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">'
@@ -128,7 +128,7 @@ do_body = (push_delegate) ->
         write_line_to f, "<BODY>"
 
     outer_body_delegate.onleave = ->
-      for f in [f_text, f_note]
+      for f in [f_text, f_note, f_contents]
         write_line_to f, "\n"
         write_line_to f, "</BODY>"
         write_line_to f, "</HTML>"
