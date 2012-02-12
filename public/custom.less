@@ -1,5 +1,7 @@
 
 a.CONV-note-identifier, a.CONV-note-reference {
+  vertical-align: top;
+  font-size: 70%;
   font-family: 'Gill Sans';
   text-decoration:none;
   color: #666;
@@ -9,20 +11,14 @@ a.CONV-note-identifier, a.CONV-note-reference {
   }
 }
 
-a.CONV-note-reference {
-  vertical-align: top;
-  font-size: 70%;
-}
-
 .CONV-note {
   padding-bottom: 1em;
   text-indent: 1em;
 
-  div:first-of-type {
+  div:first-of-type {  /* Not in IE8 */
     display: inline;
   }
   a.CONV-note-identifier {
-    vertical-align: top;
     font-size: 75%;
   }
   a.CONV-note-reference {
