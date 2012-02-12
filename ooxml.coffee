@@ -6,15 +6,12 @@ parser = require("sax").parser true
 
 sax_reader = require("./sax_reader")
 
-out_path = "public/OUT/"
-try fs.mkdirSync(out_path)
-
 font_families_by_style_name = {}
 
 reader = sax_reader.attach parser,
   onopentag: (node, push_delegate) ->
     throw "Need: <office:document> not <#{node.name}>" unless node.name is "office:document"
-    f_style = fs.openSync(out_path+"/styles.less", "w+")
+    f_style = writeable_html_file "styles"
 
     push_delegate
       onopentag: (node, push_delegate) ->
@@ -55,8 +52,9 @@ do_styles = (f_style, push_delegate) ->
               write_line_to f_style, "  font-family: #{font_family};" if n is "style:font-name"
 
 do_body = (push_delegate) ->
-  f_text = fs.openSync(out_path+"/text.html",  "w+")
-  f_note = fs.openSync(out_path+"/notes.html", "w+")
+  f_text     = writeable_html_file "text"
+  f_note     = writeable_html_file "notes"
+  f_contents = writeable_html_file "contents"
 
   make_body_delegate = (f) ->
     html_tags_by_name =
@@ -144,6 +142,12 @@ local_name = (name) ->
 
 write_to      = (f, s) -> fs.writeSync f, s
 write_line_to = (f, s) -> fs.writeSync f, s + "\n"
+
+writeable_html_file = (name) ->
+  out_path = "public/OUT/"
+  try fs.mkdirSync out_path
+  fs.openSync out_path+"/#{name}.html", "w+"
+
 
 log process.argv
 xml_str = fs.readFileSync(process.argv[2])
