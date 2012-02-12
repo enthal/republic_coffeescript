@@ -101,8 +101,9 @@ do_body = (push_delegate) ->
       note_id = @base_node.attributes['text:id']
       switch node.name
         when "text:note-citation"
-          write_to f_text, "<A href='notes.html\##{note_id}' name='#{note_id}' class='CONV-note-reference'>"
-          write_to f_note, "\n<div>\n<A href='text.html\##{note_id}' name='#{note_id}' class='CONV-note-identifier'>"
+          write_to f_text, "<A href='notes.html\##{note_id}' target='notes' name='#{note_id}' class='CONV-note-reference'>"
+          write_to f_note, "\n<div>\n"
+          write_to f_note, "<A href='text.html\##{note_id}' target='text' name='#{note_id}' class='CONV-note-identifier'>"
         when "text:note-body"
           push_delegate make_body_delegate(f_note)
 
