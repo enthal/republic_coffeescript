@@ -6,15 +6,15 @@ parser = require("sax").parser true
 
 sax_reader = require("./sax_reader")
 
-try fs.mkdirSync("OUT")
-# TODO: copy file custom.less to OUT dir
+out_path = "public/OUT/"
+try fs.mkdirSync(out_path)
 
 font_families_by_style_name = {}
 
 reader = sax_reader.attach parser,
   onopentag: (node, push_delegate) ->
     throw "Need: <office:document> not <#{node.name}>" unless node.name is "office:document"
-    f_style = fs.openSync("OUT/styles.less", "w+")
+    f_style = fs.openSync(out_path+"/styles.less", "w+")
 
     push_delegate
       onopentag: (node, push_delegate) ->
@@ -55,8 +55,8 @@ do_styles = (f_style, push_delegate) ->
               write_line_to f_style, "  font-family: #{font_family};" if n is "style:font-name"
 
 do_body = (push_delegate) ->
-  f_text = fs.openSync("OUT/text.html",  "w+")
-  f_note = fs.openSync("OUT/notes.html", "w+")
+  f_text = fs.openSync(out_path+"/text.html",  "w+")
+  f_note = fs.openSync(out_path+"/notes.html", "w+")
 
   make_body_delegate = (f) ->
     html_tags_by_name =
@@ -123,8 +123,8 @@ do_body = (push_delegate) ->
         write_line_to f, "<HEAD>"
         write_line_to f, '  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">'
         write_line_to f, '  <link rel="stylesheet/less" type="text/css" href="styles.less">'
-        write_line_to f, '  <link rel="stylesheet/less" type="text/css" href="custom.less">'
-        write_line_to f, '  <script src="less-1.2.2.min.js" type="text/javascript"></script>'
+        write_line_to f, '  <link rel="stylesheet/less" type="text/css" href="../custom.less">'
+        write_line_to f, '  <script src="../ext/less/less-1.2.2.min.js" type="text/javascript"></script>'
         write_line_to f, "</HEAD>"
         write_line_to f, "<BODY>"
 
