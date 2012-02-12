@@ -11,7 +11,7 @@ font_families_by_style_name = {}
 reader = sax_reader.attach parser,
   onopentag: (node, push_delegate) ->
     throw "Need: <office:document> not <#{node.name}>" unless node.name is "office:document"
-    f_style = writeable_html_file "styles"
+    f_style = output_file "styles", "less"
 
     push_delegate
       onopentag: (node, push_delegate) ->
@@ -52,9 +52,9 @@ do_styles = (f_style, push_delegate) ->
               write_line_to f_style, "  font-family: #{font_family};" if n is "style:font-name"
 
 do_body = (push_delegate) ->
-  f_text     = writeable_html_file "text"
-  f_note     = writeable_html_file "notes"
-  f_contents = writeable_html_file "contents"
+  f_text     = output_file "text"
+  f_note     = output_file "notes"
+  f_contents = output_file "contents"
 
   make_body_delegate = (f) ->
     html_tags_by_name =
@@ -143,10 +143,10 @@ local_name = (name) ->
 write_to      = (f, s) -> fs.writeSync f, s
 write_line_to = (f, s) -> fs.writeSync f, s + "\n"
 
-writeable_html_file = (name) ->
+output_file = (name, extension='html') ->
   out_path = "public/OUT/"
   try fs.mkdirSync out_path
-  fs.openSync out_path+"/#{name}.html", "w+"
+  fs.openSync "#{out_path}/#{name}.#{extension}", "w+"
 
 
 log process.argv
