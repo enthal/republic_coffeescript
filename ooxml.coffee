@@ -59,11 +59,15 @@ do_body = (push_delegate) ->
   make_body_delegate = (f) ->
     html_tags_by_name =
       "text:p":    "div"
-      "text:span": "span"
       "text:h":    "div"
+      "text:span": "span"
+    header_i = 0
+
+    collected_texts: []
 
     ontext: (text) ->
       write_to f, text
+      @collected_texts.push text
 
     onopentag: (node, push_delegate) ->
       tag_name = html_tags_by_name[node.name]
@@ -75,6 +79,24 @@ do_body = (push_delegate) ->
         tag += " class='#{style_name}'" if style_name
         tag += ">"
         write_to f, tag
+
+        if node.name is "text:h"
+          header_i++
+          header_name = "header_#{header_i}"
+
+          header_delegate = make_body_delegate f
+          header_delegate.onleave = ->
+            item = ""
+            item += "<div "
+            item += "class='CONV-content-tile CONV-level-#{node.attributes["text:outline-level"]}'>"
+            item += "<A href='text.html\##{header_name}' target='text'>"
+            item += @collected_texts.join ''
+            item += "</A></div>"
+            write_line_to f_contents, item
+          push_delegate header_delegate
+
+          write_to f, "<A name='#{header_name}'>"
+
       else switch node.name
         when "text:note"
           push_delegate make_note_delegate()
@@ -85,10 +107,13 @@ do_body = (push_delegate) ->
     onclosetag: (name) ->
       tag_name = html_tags_by_name[name]
       if tag_name
+        if name is "text:h"
+          write_to f, "</A>"
         write_to f, "</#{tag_name}>"
       else switch name
         when "text:note-ref"
           write_to f_note, "</A>"
+
 
   make_note_delegate = ->
     ontext: (text) ->

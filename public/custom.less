@@ -1,14 +1,16 @@
-
-a.CONV-note-identifier, a.CONV-note-reference {
-  vertical-align: top;
-  font-size: 70%;
-  font-family: 'Gill Sans';
+a[href] {
   text-decoration:none;
   color: #666;
   &:hover {
     text-decoration: underline;
     color: red;
   }
+}
+
+a.CONV-note-identifier, a.CONV-note-reference {
+  vertical-align: top;
+  font-size: 70%;
+  font-family: 'Gill Sans';
 }
 
 .CONV-note {
@@ -23,5 +25,22 @@ a.CONV-note-identifier, a.CONV-note-reference {
   }
   a.CONV-note-reference {
     font-size: 80%;
+  }
+}
+
+.CONV-content-tile {
+  a {
+    color: #334;
+  }
+  &.CONV-level-1 {
+    padding-top: .3em;
+    padding-bottom: .1em;
+    font-size: 120%;
+  }
+  &.CONV-level-2 {
+    font-size: 95%;
+    padding-left: 1em;
+    text-indent: -2em;
+    margin-left: 2em;
   }
 }
