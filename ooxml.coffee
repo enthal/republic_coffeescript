@@ -164,7 +164,9 @@ do_body = (push_delegate) ->
         write_line_to f, '  <link rel="stylesheet/less" type="text/css" href="../custom.less">'
         write_line_to f, '  <script src="../ext/less/less-1.2.2.min.js" type="text/javascript"></script>'
         write_line_to f, "</HEAD>"
-        write_line_to f, "<BODY#{" style='margin:1px;'" if f is f_bookmarks}>\n"  # TODO: un-HACK
+        extra = ""
+        extra = " style='margin:1px;'" if f is f_bookmarks  # TODO: un-HACK
+        write_line_to f, "<BODY#{extra}>\n"
 
     outer_body_delegate.onleave = ->
       for f in [f_text, f_note, f_contents, f_bookmarks]
