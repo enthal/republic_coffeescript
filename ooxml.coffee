@@ -52,9 +52,10 @@ do_styles = (f_style, push_delegate) ->
               write_line_to f_style, "  font-family: #{font_family};" if n is "style:font-name"
 
 do_body = (push_delegate) ->
-  f_text     = output_file "text"
-  f_note     = output_file "notes"
-  f_contents = output_file "contents"
+  f_text      = output_file "text"
+  f_note      = output_file "notes"
+  f_contents  = output_file "contents"
+  f_bookmarks = output_file "bookmarks"
 
   make_body_delegate = (f) ->
     html_tags_by_name =
@@ -110,6 +111,12 @@ do_body = (push_delegate) ->
         when "text:note-ref"
           write_to f_note, "<A href='\##{node.attributes["text:ref-name"]}' class='CONV-note-reference'>"
           push_delegate make_body_delegate(f_note)
+        when "text:bookmark-start"
+          bookmark_id = node.attributes["text:name"]
+          bookmark_name = "bookmark_#{bookmark_id}"
+          write_to f_bookmarks, "<div><A href='text.html\##{bookmark_name}' target='text' class='CONV-bookmark-ref'>#{bookmark_id}</A></div>"
+          write_to f, "<A name='#{bookmark_name}'></A>"
+
 
     onclosetag: (name) ->
       tag_name = html_tags_by_name[name]
@@ -149,7 +156,7 @@ do_body = (push_delegate) ->
     outer_body_delegate = make_body_delegate(f_text)
 
     outer_body_delegate.onenter = ->
-      for f in [f_text, f_note, f_contents]
+      for f in [f_text, f_note, f_contents, f_bookmarks]
         write_line_to f, "<HTML>"
         write_line_to f, "<HEAD>"
         write_line_to f, '  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">'
@@ -157,10 +164,10 @@ do_body = (push_delegate) ->
         write_line_to f, '  <link rel="stylesheet/less" type="text/css" href="../custom.less">'
         write_line_to f, '  <script src="../ext/less/less-1.2.2.min.js" type="text/javascript"></script>'
         write_line_to f, "</HEAD>"
-        write_line_to f, "<BODY>"
+        write_line_to f, "<BODY#{" style='margin:1px;'" if f is f_bookmarks}>\n"  # TODO: un-HACK
 
     outer_body_delegate.onleave = ->
-      for f in [f_text, f_note, f_contents]
+      for f in [f_text, f_note, f_contents, f_bookmarks]
         write_line_to f, "\n"
         write_line_to f, "</BODY>"
         write_line_to f, "</HTML>"
