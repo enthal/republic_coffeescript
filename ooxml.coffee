@@ -72,30 +72,37 @@ do_body = (push_delegate) ->
     onopentag: (node, push_delegate) ->
       tag_name = html_tags_by_name[node.name]
       if tag_name
-        style_name = node.attributes["text:style-name"]
-        tag = ""
-        tag += "\n" unless tag_name is "span"  # Only allow extra ws around block element tags, else browser shows it
-        tag += "<#{tag_name}"
-        tag += " class='#{style_name}'" if style_name
-        tag += ">"
-        write_to f, tag
-
+        css_classes = [node.attributes["text:style-name"]]
         if node.name is "text:h"
           header_i++
           header_name = "header_#{header_i}"
+          css_level_class = "CONV-level-#{node.attributes["text:outline-level"]}"
+          css_classes.push "CONV-header"
+          css_classes.push css_level_class
+
 
           header_delegate = make_body_delegate f
           header_delegate.onleave = ->
             item = ""
-            item += "<div "
-            item += "class='CONV-content-tile CONV-level-#{node.attributes["text:outline-level"]}'>"
+            item += "<div"
+            item += " class='CONV-content-tile #{css_level_class}'>"
             item += "<A href='text.html\##{header_name}' target='text'>"
             item += @collected_texts.join ''
             item += "</A></div>"
             write_line_to f_contents, item
           push_delegate header_delegate
 
+        style_name = node.attributes["text:style-name"]
+        tag = ""
+        tag += "\n" unless tag_name is "span"  # Only allow extra ws around block element tags, else browser shows it
+        tag += "<#{tag_name}"
+        tag += " class='#{css_classes.join ' '}'" if css_classes.length
+        tag += ">"
+        write_to f, tag
+
+        if node.name is "text:h"
           write_to f, "<A name='#{header_name}'>"
+
 
       else switch node.name
         when "text:note"
