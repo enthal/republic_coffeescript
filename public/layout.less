@@ -1,15 +1,32 @@
 iframe {
   height: 98%;
   border: none;
-  border-right: 1px solid #999;
+  border-right: 1px solid #CCC;
+  float: left;
+
   &.bookmarks {
     width:  4%;
   }
   &.contents {
-    overflow: scroll;
-    width:  19%;
+    width:  20%;
   }
   &.column {
     width:  37%;
+  }
+}
+
+.clear { clear:both; }
+
+.credits {
+  text-align: right;
+  font-family: 'Gill Sans', Verdana, Geneva, sans-serif;
+  font-weight: 600;
+  font-size: 70%;
+  padding: 1px;
+  padding-right: 1em;
+  color: #666;
+  background-color: #CCC;
+  a {
+    color: #888;
   }
 }

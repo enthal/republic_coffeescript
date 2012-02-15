@@ -1,16 +1,26 @@
 <HTML>
 <HEAD>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-  <link rel="stylesheet/less" type="text/css" href="layout.less">
+  <link rel="stylesheet/less" type="text/css" href="layout.2.less">
   <script src="ext/less/less-1.2.2.min.js" type="text/javascript"></script>
 </HEAD>
 
-<BODY style="margin:0;">
+<BODY>
+  <div class="container">
+
+  <div class="left" style:"width:19%">
   <iframe class="contents"  src="OUT/contents.html"  id="contents"  name="contents"  ></iframe>
+  </div>
+
+  <div class="left" style:"width:4%">
   <iframe class="bookmarks" src="OUT/bookmarks.html" id="bookmarks" name="bookmarks" ></iframe>
+  </div>
+
+  <div class="left" style:"width:100%">
   <iframe class="column"    src="OUT/text.html"      id="text"      name="text"      ></iframe>
   <iframe class="column"    src="OUT/notes.html"     id="notes"     name="notes"     ></iframe>
-  <div class="clear"></div>
-  <div class="credits">Powered by <A href="https://github.com/enthal/republic_coffeescript">megillah</A></div>
+  </div>
+
+  </div>
 </BODY>
 </HTML>
