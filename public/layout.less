@@ -1,8 +1,19 @@
+
+html, body {
+  overflow: hidden;
+  height: 100%;
+  margin: 0;
+}
+
 iframe {
-  height: 98%;
+  height: 100%;
   border: none;
   border-right: 1px solid #CCC;
   float: left;
+
+  html, body {
+    overflow: auto;
+  }
 
   &.bookmarks {
     width:  4%;
@@ -17,12 +28,24 @@ iframe {
 
 .clear { clear:both; }
 
+#outer-footer {
+  position: fixed;
+  bottom: 0;
+  right: 0;
+  width: 100%;
+  z-index: 99999;
+
+  .outer-footer-content {
+    position: relative;
+  }
+}
+
 .credits {
   text-align: right;
   font-family: 'Gill Sans', Verdana, Geneva, sans-serif;
   font-weight: 600;
   font-size: 70%;
-  padding: 1px;
+  padding: 2px;
   padding-right: 1em;
   color: #666;
   background-color: #CCC;
