@@ -7,6 +7,7 @@ parser = require("sax").parser true
 sax_reader = require("./sax_reader")
 
 font_families_by_style_name = {}
+export_date = null
 
 reader = sax_reader.attach parser,
   onopentag: (node, push_delegate) ->
@@ -16,6 +17,8 @@ reader = sax_reader.attach parser,
     push_delegate
       onopentag: (node, push_delegate) ->
         switch node.name
+          when "office:meta"
+            do_office_meta push_delegate
           when "office:font-face-decls"
             do_font_face_decls push_delegate
           when "office:styles", "office:automatic-styles"
@@ -24,6 +27,14 @@ reader = sax_reader.attach parser,
             do_body push_delegate
           else
             push_delegate {}  # skip subtree
+
+do_office_meta = (push_delegate) ->
+  push_delegate
+    onopentag: (node, push_delegate) -> 
+      if node.name is "dc:date"
+        push_delegate
+          ontext: (text) -> 
+            export_date = text
 
 do_font_face_decls = (push_delegate) ->
   push_delegate
@@ -56,6 +67,8 @@ do_body = (push_delegate) ->
   f_note      = output_file "notes"
   f_contents  = output_file "contents"
   f_bookmarks = output_file "bookmarks"
+
+  write_line_to f_text, "<div id='text-data' data-export-date='#{export_date}'></div>"
 
   make_body_delegate = (f) ->
     html_tags_by_name =
@@ -157,6 +170,7 @@ do_body = (push_delegate) ->
 
     outer_body_delegate.onenter = ->
       for f in [f_text, f_note, f_contents, f_bookmarks]
+        write_line_to f, "<!DOCTYPE html>"
         write_line_to f, "<HTML>"
         write_line_to f, "<HEAD>"
         write_line_to f, '  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">'

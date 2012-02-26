@@ -1,8 +1,10 @@
+<!DOCTYPE html>
 <HTML>
 <HEAD>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
   <link rel="stylesheet/less" type="text/css" href="layout.less">
   <script src="ext/less/less-1.2.2.min.js" type="text/javascript"></script>
+  <script src="js.js" type="text/javascript"></script>
   <title>Kenneth Quandt's Commentary on Plato's Republic</title>
 
   <script type="text/javascript">
@@ -17,7 +19,7 @@
   </script>
 </HEAD>
 
-<BODY>
+<BODY onload="show_export_date()">
 
   <iframe class="contents"  src="OUT/contents.html"  id="contents"  name="contents"  ></iframe>
   <iframe class="bookmarks" src="OUT/bookmarks.html" id="bookmarks" name="bookmarks" ></iframe>
@@ -26,7 +28,9 @@
   <div class="clear"></div>
 
   <div id="outer-footer">
-  <div id="outer-footer-content"class="credits" >
+  <div id="outer-footer-content" class="credits" >
+    <!--object id="foo" name="foo" type="text/plain" data="OUT/date.txt"></object-->
+    <span id="date-display"></span>
     Powered by <A href="https://github.com/enthal/republic_coffeescript">megillah</A>
   </div>
   </div>
