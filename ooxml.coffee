@@ -151,9 +151,11 @@ do_body = (push_delegate) ->
       note_id = @base_node.attributes['text:id']
       switch node.name
         when "text:note-citation"
-          write_to f_text, "<A href='notes.html\##{note_id}' target='notes' name='#{note_id}' class='CONV-note-reference'>"
-          write_to f_note, "\n<div class='CONV-note'>\n"
-          write_to f_note, "<A href='text.html\##{note_id}' target='text' name='#{note_id}' class='CONV-note-identifier'>"
+          write_to f_text, "<A href='notes.html\##{note_id}' target='notes' name='#{note_id}' class='CONV-note-reference'" +
+            " onclick='return on_note_ref_click(this, event)' onmouseover='on_note_ref_mouseover(this, event)' onmouseout='on_note_ref_mouseout(this, event)'>"
+          write_to f_note, "\n<div class='CONV-note' name='note-#{note_id}'>\n"
+          write_to f_note, "<A href='text.html\##{note_id}' target='text' name='#{note_id}' class='CONV-note-identifier'" +
+            " onclick='return on_note_ident_click(this, event)' onmouseover='on_note_ident_mouseover(this, event)' onmouseout='on_note_ident_mouseout(this, event)'>"
         when "text:note-body"
           push_delegate make_body_delegate(f_note)
 
@@ -177,6 +179,7 @@ do_body = (push_delegate) ->
         write_line_to f, '  <link rel="stylesheet/less" type="text/css" href="styles.less">'
         write_line_to f, '  <link rel="stylesheet/less" type="text/css" href="../custom.less">'
         write_line_to f, '  <script src="../ext/less/less-1.2.2.min.js" type="text/javascript"></script>'
+        write_line_to f, '  <script src="../js.js" type="text/javascript"></script>'
         write_line_to f, "</HEAD>"
         extra = ""
         extra = " style='margin:1px;'" if f is f_bookmarks  # TODO: un-HACK
