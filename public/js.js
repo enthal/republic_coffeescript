@@ -4,16 +4,8 @@ function onload() {
 }
 
 function show_export_date() {
-  var inner_doc = get_iframe_doc('text');
-  var export_date_text = inner_doc.getElementById('text-data').getAttribute('data-export-date');
-  var export_date = new Date(export_date_text);
-
-  var span = document.getElementById('date-display');
-  span.innerText = export_date.toString();
-
-  if (span.innerText.toLowerCase() === "invalid date") {
-    span.innerText = export_date_text;
-  }
+  var export_date_text = get_iframe_doc('text').getElementById('text-data').getAttribute('data-export-date');
+  document.getElementById('date-display').innerHTML = export_date_text.match(/(.*)T/)[1] || export_date_text;
 }
 
 function get_iframe_doc(iframe_id) {
