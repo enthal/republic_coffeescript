@@ -9,16 +9,31 @@ window.handle = (event) ->
   target = event.target || event.srcElement || event.toElement
   #console.log("***** handle:", target.className, event.type)
   #console.log(event)
+  refd_note_div = -> get_note_div(target.name)
 
   controller =
     'CONV-note-reference':
       click: ->
-        get_note_div(target.name).scrollIntoView(true)
+        # See-level!!
+        event.pageY ?= event.clientY + document.documentElement.scrollTop  # special IE case
+        console.log  "CLICK!"
+        lp = ->
+          console.log(
+            event.clientY, event.pageY, 
+            target.offsetTop,  target.offsetParent.scrollTop,
+            target.offsetTop - target.offsetParent.scrollTop,
+            refd_note_div().offsetTop, 
+            refd_note_div().offsetParent.scrollTop )
+        lp()
+        #refd_note_div().scrollIntoView(true)
+        refd_note_div().offsetParent.scrollTop = refd_note_div().offsetTop - (target.offsetTop - target.offsetParent.scrollTop)
+        lp()
+        console.log event
         false
       mouseover: (target, event) ->
-        get_note_div(target.name).style.backgroundColor = "#FFC"
+        refd_note_div().style.backgroundColor = "#FFC"
       mouseout:  (target, event) ->
-        get_note_div(target.name).style.backgroundColor = null
+        refd_note_div().style.backgroundColor = null
     'CONV-note-identifier':
       mouseover: (target, event) ->
         console.log top, top.document, document
