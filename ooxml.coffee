@@ -94,7 +94,6 @@ do_body = (push_delegate) ->
           css_classes.push "CONV-header"
           css_classes.push css_level_class
 
-
           header_delegate = make_body_delegate f
           header_delegate.onleave = ->
             item = ""
@@ -117,7 +116,6 @@ do_body = (push_delegate) ->
         if node.name is "text:h"
           write_to f, "<A name='#{header_name}'>"
 
-
       else switch node.name
         when "text:note"
           push_delegate make_note_delegate()
@@ -129,7 +127,6 @@ do_body = (push_delegate) ->
           bookmark_name = "bookmark_#{bookmark_id}"
           write_to f_bookmarks, "<div><A href='text.html\##{bookmark_name}' target='text' class='CONV-bookmark-ref'>#{bookmark_id}</A></div>"
           write_to f, "<A name='#{bookmark_name}'></A>"
-
 
     onclosetag: (name) ->
       tag_name = html_tags_by_name[name]
@@ -151,11 +148,9 @@ do_body = (push_delegate) ->
       note_id = @base_node.attributes['text:id']
       switch node.name
         when "text:note-citation"
-          write_to f_text, "<A href='notes.html\##{note_id}' target='notes' name='#{note_id}' class='CONV-note-reference'" +
-            " onclick='return on_note_ref_click(this, event)' onmouseover='on_note_ref_mouseover(this, event)' onmouseout='on_note_ref_mouseout(this, event)'>"
+          write_to f_text, "<A href='notes.html\##{note_id}' target='notes' name='#{note_id}' class='CONV-note-reference'>"
           write_to f_note, "\n<div class='CONV-note' name='note-#{note_id}'>\n"
-          write_to f_note, "<A href='text.html\##{note_id}' target='text' name='#{note_id}' class='CONV-note-identifier'" +
-            " onclick='return on_note_ident_click(this, event)' onmouseover='on_note_ident_mouseover(this, event)' onmouseout='on_note_ident_mouseout(this, event)'>"
+          write_to f_note, "<A href='text.html\##{note_id}' target='text' name='#{note_id}' class='CONV-note-identifier'>"
         when "text:note-body"
           push_delegate make_body_delegate(f_note)
 
@@ -183,8 +178,8 @@ do_body = (push_delegate) ->
         write_line_to f, "</HEAD>"
         extra = ""
         extra = " style='margin:1px;'" if f is f_bookmarks  # TODO: un-HACK
-        write_line_to f, "<BODY#{extra}>\n"
-
+        write_line_to f, "<BODY#{extra} onclick='return handle(event)' onmouseover='return handle(event)' onmouseout='return handle(event)'>\n"
+ 
     outer_body_delegate.onleave = ->
       for f in [f_text, f_note, f_contents, f_bookmarks]
         write_line_to f, "\n"
