@@ -12,7 +12,9 @@ window.handle = (event) ->
 
   controller =
     'CONV-note-reference':
-      click: -> console.log "CONV-note-reference onclick"; true
+      click: ->
+        get_note_div(target.name).scrollIntoView(true)
+        false
       mouseover: (target, event) ->
         get_note_div(target.name).style.backgroundColor = "#FFC"
       mouseout:  (target, event) ->
