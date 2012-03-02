@@ -23,11 +23,21 @@ window.handle = (event) ->
             target.offsetTop,  target.offsetParent.scrollTop,
             target.offsetTop - target.offsetParent.scrollTop,
             refd_note_div().offsetTop, 
-            refd_note_div().offsetParent.scrollTop )
+            refd_note_div().offsetParent.scrollTop,
+            refd_note_div().offsetTop - (target.offsetTop - target.offsetParent.scrollTop) )
         lp()
         #refd_note_div().scrollIntoView(true)
-        refd_note_div().offsetParent.scrollTop = refd_note_div().offsetTop - (target.offsetTop - target.offsetParent.scrollTop)
-        lp()
+        old_scrollTop = refd_note_div().offsetParent.scrollTop
+        wanted_scrollTop = refd_note_div().offsetTop - (target.offsetTop - target.offsetParent.scrollTop)
+        # TODO: back off scroll by amount height of bottom part of note div scolled out of view, if any, but not past top of div
+        if wanted_scrollTop != old_scrollTop
+          refd_note_div().offsetParent.scrollTop = wanted_scrollTop
+          lp()
+          if old_scrollTop != refd_note_div().offsetParent.scrollTop
+            console.log "scrolled to #{wanted_scrollTop}"
+          else
+            console.log "FAILED to scroll to #{wanted_scrollTop}... falling back"
+            return true
         console.log event
         false
       mouseover: (target, event) ->
