@@ -33,11 +33,13 @@ window.handle = (event) ->
         if wanted_scrollTop != old_scrollTop
           refd_note_div().offsetParent.scrollTop = wanted_scrollTop
           lp()
-          if old_scrollTop != refd_note_div().offsetParent.scrollTop
-            console.log "scrolled to #{wanted_scrollTop}"
+          if old_scrollTop == refd_note_div().offsetParent.scrollTop
+            refd_note_div().offsetParent.parentElement.scrollTop = wanted_scrollTop  # firefox
+            if old_scrollTop == refd_note_div().offsetParent.parentElement.scrollTop
+              console.log "FAILED to scroll to #{wanted_scrollTop}... falling back"
+              return true
           else
-            console.log "FAILED to scroll to #{wanted_scrollTop}... falling back"
-            return true
+            console.log "scrolled to #{wanted_scrollTop}"
         console.log event
         false
       mouseover: (target, event) ->
