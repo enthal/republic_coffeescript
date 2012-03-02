@@ -15,24 +15,11 @@ window.handle = (event) ->
     'CONV-note-reference':
       click: ->
         # See-level!!
-        event.pageY ?= event.clientY + document.documentElement.scrollTop  # special IE case
-        console.log  "CLICK!"
-        lp = ->
-          console.log(
-            event.clientY, event.pageY, 
-            target.offsetTop,  target.offsetParent.scrollTop,
-            target.offsetTop - target.offsetParent.scrollTop,
-            refd_note_div().offsetTop, 
-            refd_note_div().offsetParent.scrollTop,
-            refd_note_div().offsetTop - (target.offsetTop - target.offsetParent.scrollTop) )
-        lp()
-        #refd_note_div().scrollIntoView(true)
         old_scrollTop = refd_note_div().offsetParent.scrollTop
         wanted_scrollTop = refd_note_div().offsetTop - (target.offsetTop - target.offsetParent.scrollTop)
         # TODO: back off scroll by amount height of bottom part of note div scolled out of view, if any, but not past top of div
         if wanted_scrollTop != old_scrollTop
           refd_note_div().offsetParent.scrollTop = wanted_scrollTop
-          lp()
           if old_scrollTop == refd_note_div().offsetParent.scrollTop
             refd_note_div().offsetParent.parentElement.scrollTop = wanted_scrollTop  # firefox
             if old_scrollTop == refd_note_div().offsetParent.parentElement.scrollTop
@@ -40,7 +27,6 @@ window.handle = (event) ->
               return true
           else
             console.log "scrolled to #{wanted_scrollTop}"
-        console.log event
         false
       mouseover: (target, event) ->
         refd_note_div().style.backgroundColor = "#FFC"
