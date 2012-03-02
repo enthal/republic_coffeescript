@@ -9,32 +9,51 @@ window.handle = (event) ->
   target = event.target || event.srcElement || event.toElement
   #console.log("***** handle:", target.className, event.type)
   #console.log(event)
-  refd_note_div = -> get_note_div(target.name)
+
+  refd_note_div = -> get_iframe_doc("notes").getElementsByName("note-" + target.name)[0]
+  note_ref = -> get_iframe_doc("text").getElementsByName(target.name.replace(/^note-/,''))[0]
+
+  see_level = (get_destination) ->
+    console.log "see_level!!!"
+    old_scrollTop = get_destination().offsetParent.scrollTop
+    wanted_scrollTop = get_destination().offsetTop - (target.offsetTop - target.offsetParent.scrollTop)
+    if wanted_scrollTop < 0
+      console.log "FAILED to scroll to #{wanted_scrollTop}... falling back"  # happens on firefox!
+      return true
+
+    # TODO: back off scroll by amount height of bottom part of note div scolled out of view, if any, but not past top of div
+    if wanted_scrollTop != old_scrollTop
+      get_destination().offsetParent.scrollTop = wanted_scrollTop
+      if old_scrollTop == get_destination().offsetParent.scrollTop
+        console.log "try firefox workaround"
+        get_destination().offsetParent.parentElement.scrollTop = wanted_scrollTop  # firefox
+        if old_scrollTop == get_destination().offsetParent.parentElement.scrollTop
+          console.log "FAILED to scroll to #{wanted_scrollTop}... falling back"
+          return true
+    console.log "scrolled to #{wanted_scrollTop}"
+    false
 
   controller =
     'CONV-note-reference':
       click: ->
-        # See-level!!
-        old_scrollTop = refd_note_div().offsetParent.scrollTop
-        wanted_scrollTop = refd_note_div().offsetTop - (target.offsetTop - target.offsetParent.scrollTop)
-        # TODO: back off scroll by amount height of bottom part of note div scolled out of view, if any, but not past top of div
-        if wanted_scrollTop != old_scrollTop
-          refd_note_div().offsetParent.scrollTop = wanted_scrollTop
-          if old_scrollTop == refd_note_div().offsetParent.scrollTop
-            refd_note_div().offsetParent.parentElement.scrollTop = wanted_scrollTop  # firefox
-            if old_scrollTop == refd_note_div().offsetParent.parentElement.scrollTop
-              console.log "FAILED to scroll to #{wanted_scrollTop}... falling back"
-              return true
-          else
-            console.log "scrolled to #{wanted_scrollTop}"
-        false
-      mouseover: (target, event) ->
+        see_level refd_note_div
+      mouseover: ->
         refd_note_div().style.backgroundColor = "#FFC"
-      mouseout:  (target, event) ->
+      mouseout: ->
         refd_note_div().style.backgroundColor = null
     'CONV-note-identifier':
-      mouseover: (target, event) ->
-        console.log top, top.document, document
+      click: ->
+        see_level note_ref
+    #'CONV-note':
+      mouseover: ->
+        note_ref().style.backgroundColor = "#FF3"
+        note_ref().style.border = "2px solid red"
+      mouseout: ->
+        note_ref().style.backgroundColor = null
+        note_ref().style.border = null
+    'CONV-note':
+      mouseover: -> console.log "mouseover"
+      mouseout:  -> console.log "mouseout"
 
   for css_class in target.classList
     action = try controller[css_class][event.type]
@@ -48,5 +67,3 @@ get_iframe_doc = (iframe_id) ->
   iframe = top.document.getElementById(iframe_id)
   iframe.content_document or iframe.contentWindow.document
 
-get_note_div = (ref_name) ->
-  get_iframe_doc("notes").getElementsByName("note-" + ref_name)[0]
