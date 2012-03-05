@@ -14,19 +14,8 @@ window.handle = (event) ->
   note_ref = -> get_iframe_doc("text").getElementsByName(target.name.replace(/^note-/,''))[0]
 
   see_level = (get_destination) ->
-    console.log "see_level!!!"
-
-    target_scroll_space_scrollTop = target.offsetParent.scrollTop || target.offsetParent.parentElement.scrollTop
-    wanted_scrollTop = get_destination().offsetTop - (target.offsetTop - target_scroll_space_scrollTop)
-    console.log "scrolling to #{wanted_scrollTop}"
-
     # TODO: back off scroll by amount height of bottom part of note div scolled out of view, if any, but not past top of div
-    old_scrollTop = get_destination().offsetParent.scrollTop
-    if wanted_scrollTop != old_scrollTop
-      get_destination().offsetParent.scrollTop = wanted_scrollTop
-      if old_scrollTop == get_destination().offsetParent.scrollTop
-        console.log "try firefox workaround"
-        get_destination().offsetParent.parentElement.scrollTop = wanted_scrollTop  # firefox
+    get_destination().offsetParent.scrollTop = get_destination().offsetTop - (target.offsetTop - target.offsetParent.scrollTop)
     false
 
   controller =
@@ -62,4 +51,3 @@ window.handle = (event) ->
 get_iframe_doc = (iframe_id) ->
   iframe = top.document.getElementById(iframe_id)
   iframe.content_document or iframe.contentWindow.document
-
