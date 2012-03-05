@@ -176,7 +176,7 @@ do_body = (push_delegate) ->
         f.write_line "</HEAD>"
         extra = ""
         extra = " style='margin:1px;'" if f is f_bookmarks  # TODO: un-HACK
-        f.write_line "<BODY#{extra} onclick='return handle(event)' onmouseover='return handle(event)' onmouseout='return handle(event)'>\n"
+        f.write_line "<BODY name='#{f.name}' onclick='return handle(event)' onmouseover='return handle(event)' onmouseout='return handle(event)'>\n"
         f.write_line "<div id='text-data' data-export-date='#{export_date}'></div>" if f is f_text
         f.write_line "<DIV class='scroll-container'>"
         f.write_line "<DIV class='scroll-content'>"
@@ -203,6 +203,7 @@ output_file = (name, extension='html') ->
   try fs.mkdirSync out_path
   f = fs.openSync "#{out_path}/#{name}.#{extension}", "w+"
 
+  name       : name
   write      : (s) -> fs.writeSync f, s
   write_line : (s) -> fs.writeSync f, s + "\n"
 
