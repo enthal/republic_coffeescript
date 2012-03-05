@@ -68,8 +68,6 @@ do_body = (push_delegate) ->
   f_contents  = output_file "contents"
   f_bookmarks = output_file "bookmarks"
 
-  write_line_to f_text, "<div id='text-data' data-export-date='#{export_date}'></div>"
-
   make_body_delegate = (f) ->
     html_tags_by_name =
       "text:p":    "div"
@@ -179,7 +177,9 @@ do_body = (push_delegate) ->
         extra = ""
         extra = " style='margin:1px;'" if f is f_bookmarks  # TODO: un-HACK
         write_line_to f, "<BODY#{extra} onclick='return handle(event)' onmouseover='return handle(event)' onmouseout='return handle(event)'>\n"
- 
+        write_line_to f, "<div id='text-data' data-export-date='#{export_date}'></div>" if f is f_text
+
+
     outer_body_delegate.onleave = ->
       for f in [f_text, f_note, f_contents, f_bookmarks]
         write_line_to f, "\n"
