@@ -50,17 +50,17 @@ do_styles = (f_style, push_delegate) ->
         style_name = node.attributes["style:name"]
         push_delegate
           onenter: (node) ->
-            write_line_to f_style, ".#{style_name} {"
+            f_style.write_line ".#{style_name} {"
             parent_style_name = node.attributes["style:parent-style-name"]
-            write_line_to f_style, "  .#{parent_style_name};"  if parent_style_name
+            f_style.write_line "  .#{parent_style_name};"  if parent_style_name
           onleave: ->
-            write_line_to f_style, "}\n"
+            f_style.write_line "}\n"
           onopentag: (node) ->
             for n,v of node.attributes
               m = n.match /^fo:(.*)/
-              write_line_to f_style, "  #{m[1]}: #{v};"  if m
+              f_style.write_line "  #{m[1]}: #{v};"  if m
               font_family = font_families_by_style_name[v]
-              write_line_to f_style, "  font-family: #{font_family};" if n is "style:font-name"
+              f_style.write_line "  font-family: #{font_family};" if n is "style:font-name"
 
 do_body = (push_delegate) ->
   f_text      = output_file "text"
@@ -78,7 +78,7 @@ do_body = (push_delegate) ->
     collected_texts: []
 
     ontext: (text) ->
-      write_to f, text
+      f.write text
       @collected_texts.push text
 
     onopentag: (node, push_delegate) ->
@@ -100,7 +100,7 @@ do_body = (push_delegate) ->
             item += "<A href='text.html\##{header_name}' target='text'>"
             item += @collected_texts.join ''
             item += "</A></div>"
-            write_line_to f_contents, item
+            f_contents.write_line item
           push_delegate header_delegate
 
         style_name = node.attributes["text:style-name"]
@@ -109,87 +109,87 @@ do_body = (push_delegate) ->
         tag += "<#{tag_name}"
         tag += " class='#{css_classes.join ' '}'" if css_classes.length
         tag += ">"
-        write_to f, tag
+        f.write tag
 
         if node.name is "text:h"
-          write_to f, "<A name='#{header_name}'>"
+          f.write "<A name='#{header_name}'>"
 
       else switch node.name
         when "text:note"
           push_delegate make_note_delegate()
         when "text:note-ref"
-          write_to f_note, "<A href='\##{node.attributes["text:ref-name"]}' class='CONV-note-reference'>"
+          f_note.write "<A href='\##{node.attributes["text:ref-name"]}' class='CONV-note-reference'>"
           push_delegate make_body_delegate(f_note)
         when "text:bookmark-start"
           bookmark_id = node.attributes["text:name"]
           bookmark_name = "bookmark_#{bookmark_id}"
-          write_to f_bookmarks, "<div><A href='text.html\##{bookmark_name}' target='text' class='CONV-bookmark-ref'>#{bookmark_id}</A></div>"
-          write_to f, "<A name='#{bookmark_name}'></A>"
+          f_bookmarks.write "<div><A href='text.html\##{bookmark_name}' target='text' class='CONV-bookmark-ref'>#{bookmark_id}</A></div>"
+          f.write "<A name='#{bookmark_name}'></A>"
 
     onclosetag: (name) ->
       tag_name = html_tags_by_name[name]
       if tag_name
         if name is "text:h"
-          write_to f, "</A>"
-        write_to f, "</#{tag_name}>"
+          f.write "</A>"
+        f.write "</#{tag_name}>"
       else switch name
         when "text:note-ref"
-          write_to f_note, "</A>"
+          f_note.write "</A>"
 
 
   make_note_delegate = ->
     ontext: (text) ->
       text = text.trim()
-      write_to f, text for f in [f_text, f_note]
+      f.write text for f in [f_text, f_note]
 
     onopentag: (node, push_delegate) ->
       note_id = @base_node.attributes['text:id']
       switch node.name
         when "text:note-citation"
-          write_to f_text, "<A href='notes.html\##{note_id}' target='notes' name='#{note_id}' class='CONV-note-reference'>"
-          write_to f_note, "\n<div class='CONV-note' name='note-#{note_id}'>\n"
-          write_to f_note, "<A href='text.html\##{note_id}' target='text' name='#{note_id}' class='CONV-note-identifier'>"
+          f_text.write "<A href='notes.html\##{note_id}' target='notes' name='#{note_id}' class='CONV-note-reference'>"
+          f_note.write "\n<div class='CONV-note' name='note-#{note_id}'>\n"
+          f_note.write "<A href='text.html\##{note_id}' target='text' name='#{note_id}' class='CONV-note-identifier'>"
         when "text:note-body"
           push_delegate make_body_delegate(f_note)
 
     onclosetag: (name) ->
       switch name
         when "text:note-citation"
-          write_to f_text, "</A>"
-          write_to f_note, "</A>"
+          f_text.write "</A>"
+          f_note.write "</A>"
         when "text:note-body"
-          write_to f_note, "\n</div>\n"
+          f_note.write "\n</div>\n"
 
   do ->
     outer_body_delegate = make_body_delegate(f_text)
 
     outer_body_delegate.onenter = ->
       for f in [f_text, f_note, f_contents, f_bookmarks]
-        write_line_to f, "<!DOCTYPE html>"
-        write_line_to f, "<HTML>"
-        write_line_to f, "<HEAD>"
-        write_line_to f, '  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">'
-        write_line_to f, '  <link rel="stylesheet/less" type="text/css" href="styles.less">'
-        write_line_to f, '  <link rel="stylesheet/less" type="text/css" href="../custom.less">'
-        write_line_to f, '  <script src="../ext/less/less-1.2.2.min.js" type="text/javascript"></script>'
-        write_line_to f, '  <script src="../js.js" type="text/javascript"></script>'
-        write_line_to f, "</HEAD>"
+        f.write_line "<!DOCTYPE html>"
+        f.write_line "<HTML>"
+        f.write_line "<HEAD>"
+        f.write_line '  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">'
+        f.write_line '  <link rel="stylesheet/less" type="text/css" href="styles.less">'
+        f.write_line '  <link rel="stylesheet/less" type="text/css" href="../custom.less">'
+        f.write_line '  <script src="../ext/less/less-1.2.2.min.js" type="text/javascript"></script>'
+        f.write_line '  <script src="../js.js" type="text/javascript"></script>'
+        f.write_line "</HEAD>"
         extra = ""
         extra = " style='margin:1px;'" if f is f_bookmarks  # TODO: un-HACK
-        write_line_to f, "<BODY#{extra} onclick='return handle(event)' onmouseover='return handle(event)' onmouseout='return handle(event)'>\n"
-        write_line_to f, "<div id='text-data' data-export-date='#{export_date}'></div>" if f is f_text
-        write_line_to f, "<DIV class='scroll-container'>"
-        write_line_to f, "<DIV class='scroll-content'>"
+        f.write_line "<BODY#{extra} onclick='return handle(event)' onmouseover='return handle(event)' onmouseout='return handle(event)'>\n"
+        f.write_line "<div id='text-data' data-export-date='#{export_date}'></div>" if f is f_text
+        f.write_line "<DIV class='scroll-container'>"
+        f.write_line "<DIV class='scroll-content'>"
 
 
 
     outer_body_delegate.onleave = ->
       for f in [f_text, f_note, f_contents, f_bookmarks]
-        write_line_to f, "\n"
-        write_line_to f, "</DIV>"
-        write_line_to f, "</DIV>"
-        write_line_to f, "</BODY>"
-        write_line_to f, "</HTML>"
+        f.write_line "\n"
+        f.write_line "</DIV>"
+        f.write_line "</DIV>"
+        f.write_line "</BODY>"
+        f.write_line "</HTML>"
 
     push_delegate outer_body_delegate
 
@@ -198,13 +198,14 @@ local_name = (name) ->
   m = /.*:(.*)/.exec(name)
   m? and m[1] or name
 
-write_to      = (f, s) -> fs.writeSync f, s
-write_line_to = (f, s) -> fs.writeSync f, s + "\n"
-
 output_file = (name, extension='html') ->
   out_path = "public/OUT/"
   try fs.mkdirSync out_path
-  fs.openSync "#{out_path}/#{name}.#{extension}", "w+"
+  f = fs.openSync "#{out_path}/#{name}.#{extension}", "w+"
+
+  write      : (s) -> fs.writeSync f, s
+  write_line : (s) -> fs.writeSync f, s + "\n"
+
 
 
 log process.argv
