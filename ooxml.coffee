@@ -174,8 +174,6 @@ do_body = (push_delegate) ->
         f.write_line '  <script src="../ext/less/less-1.2.2.min.js" type="text/javascript"></script>'
         f.write_line '  <script src="../js.js" type="text/javascript"></script>'
         f.write_line "</HEAD>"
-        extra = ""
-        extra = " style='margin:1px;'" if f is f_bookmarks  # TODO: un-HACK
         f.write_line "<BODY name='#{f.name}' onclick='return handle(event)' onmouseover='return handle(event)' onmouseout='return handle(event)'>\n"
         f.write_line "<div id='text-data' data-export-date='#{export_date}'></div>" if f is f_text
         f.write_line "<DIV class='scroll-container'>"
