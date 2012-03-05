@@ -15,22 +15,18 @@ window.handle = (event) ->
 
   see_level = (get_destination) ->
     console.log "see_level!!!"
-    old_scrollTop = get_destination().offsetParent.scrollTop
-    wanted_scrollTop = get_destination().offsetTop - (target.offsetTop - target.offsetParent.scrollTop)
-    if wanted_scrollTop < 0
-      console.log "FAILED to scroll to #{wanted_scrollTop}... falling back"  # happens on firefox!
-      return true
+
+    target_scroll_space_scrollTop = target.offsetParent.scrollTop || target.offsetParent.parentElement.scrollTop
+    wanted_scrollTop = get_destination().offsetTop - (target.offsetTop - target_scroll_space_scrollTop)
+    console.log "scrolling to #{wanted_scrollTop}"
 
     # TODO: back off scroll by amount height of bottom part of note div scolled out of view, if any, but not past top of div
+    old_scrollTop = get_destination().offsetParent.scrollTop
     if wanted_scrollTop != old_scrollTop
       get_destination().offsetParent.scrollTop = wanted_scrollTop
       if old_scrollTop == get_destination().offsetParent.scrollTop
         console.log "try firefox workaround"
         get_destination().offsetParent.parentElement.scrollTop = wanted_scrollTop  # firefox
-        if old_scrollTop == get_destination().offsetParent.parentElement.scrollTop
-          console.log "FAILED to scroll to #{wanted_scrollTop}... falling back"
-          return true
-    console.log "scrolled to #{wanted_scrollTop}"
     false
 
   controller =
