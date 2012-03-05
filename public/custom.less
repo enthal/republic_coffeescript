@@ -1,6 +1,27 @@
+html, body {
+  height: 100%;
+  padding: 0;
+  margin: 0;
+}
+html {
+  overflow: hidden;
+  width: 100%;
+}
 body {
+  position: relative;
+}
+.scroll-container {
+  overflow: auto;
+  position: absolute;
+  top: 0;
+  height: 100%;
+  width: 100%;
+}
+.scroll-content {
+  margin: 0px 8px;
   padding-bottom: 1em;
 }
+
 
 a[href] {
   text-decoration:none;

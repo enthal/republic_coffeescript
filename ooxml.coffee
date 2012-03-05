@@ -178,11 +178,16 @@ do_body = (push_delegate) ->
         extra = " style='margin:1px;'" if f is f_bookmarks  # TODO: un-HACK
         write_line_to f, "<BODY#{extra} onclick='return handle(event)' onmouseover='return handle(event)' onmouseout='return handle(event)'>\n"
         write_line_to f, "<div id='text-data' data-export-date='#{export_date}'></div>" if f is f_text
+        write_line_to f, "<DIV class='scroll-container'>"
+        write_line_to f, "<DIV class='scroll-content'>"
+
 
 
     outer_body_delegate.onleave = ->
       for f in [f_text, f_note, f_contents, f_bookmarks]
         write_line_to f, "\n"
+        write_line_to f, "</DIV>"
+        write_line_to f, "</DIV>"
         write_line_to f, "</BODY>"
         write_line_to f, "</HTML>"
 
