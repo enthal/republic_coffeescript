@@ -5,6 +5,15 @@ html, body {
   margin: 0;
 }
 
+@footer-height: 17px;
+.iframe-container {
+  position: fixed;
+  top: 0;
+  bottom: @footer-height;
+  left: 0;
+  width: 100%;
+}
+
 iframe {
   height: 100%;
   border: none;
@@ -33,6 +42,7 @@ iframe {
   bottom: 0;
   right: 0;
   width: 100%;
+  height: @footer-height;
   z-index: 99999;
 }
 
@@ -41,7 +51,6 @@ iframe {
   font-family: 'Gill Sans', Verdana, Geneva, sans-serif;
   font-weight: 600;
   font-size: 70%;
-  padding: 2px;
   padding-right: 1em;
   padding-left: 1em;
   color: #666;
