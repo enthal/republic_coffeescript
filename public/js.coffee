@@ -7,11 +7,12 @@ window.show_export_date = ->
 
 window.handle = (event) ->
   target = event.target || event.srcElement || event.toElement
-  #console.log("***** handle:", target.className, event.type)
-  #console.log(event)
+  #if event.type is 'scroll'
+  #  console.log("***** handle:", target.className, event.type)
+  #  console.log(event)
 
   refd_note_div = -> get_iframe_doc("notes").getElementsByName("note-" + target.name)[0]
-  note_ref = -> get_iframe_doc("text").getElementsByName(target.name.replace(/^note-/,''))[0]
+  note_ref      = -> get_iframe_doc("text") .getElementsByName(target.name.replace(/^note-/,''))[0]
 
   see_level = (get_destination) ->
     # TODO: back off scroll by amount height of bottom part of note div scolled out of view, if any, but not past top of div
@@ -39,11 +40,25 @@ window.handle = (event) ->
     'CONV-note':
       mouseover: -> console.log "mouseover"
       mouseout:  -> console.log "mouseout"
+    'scroll-container':
+      scroll: ->
+        scrollTop = event.target.scrollTop
+        scrollBottom = scrollTop + event.target.offsetParent.clientHeight
+        bmrs = get_iframe_doc("text").getElementsByClassName("CONV-bookmark-reference")  # TODO IE polyfill
+        #console.log "scroll", scrollTop, scrollBottom#, bmrs.length, [0...bmrs.length]
+        for i in [0...bmrs.length]
+          [bmr, bmr_next] = [bmrs[i], bmrs[i+1]]
+          bm = get_iframe_doc("bookmarks").getElementsByName(bmr.name)[0]
+          if bm
+            if bmr.offsetTop < scrollBottom and (!bmr_next or bmr_next.offsetTop > scrollBottom)
+              bm.classList.add "bookmark-visible"  # TODO IE polyfill
+            else
+              bm.classList.remove "bookmark-visible"
 
   for css_class in target.classList
     action = try controller[css_class][event.type]
     if action
-      console.log "ACTION: #{css_class} : #{event.type}"
+      #console.log "ACTION: #{css_class} : #{event.type}"
       return action target, event
 
   true

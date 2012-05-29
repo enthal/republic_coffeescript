@@ -123,8 +123,8 @@ do_body = (push_delegate) ->
         when "text:bookmark-start"
           bookmark_id = node.attributes["text:name"]
           bookmark_name = "bookmark_#{bookmark_id}"
-          f_bookmarks.write "<div><A href='text.html\##{bookmark_name}' target='text' class='CONV-bookmark-ref'>#{bookmark_id}</A></div>"
-          f.write "<A name='#{bookmark_name}'></A>"
+          f_bookmarks.write "\n<div class='CONV-bookmark' name='#{bookmark_name}'><A href='text.html\##{bookmark_name}' target='text' class='CONV-bookmark-ref'>#{bookmark_id}</A></div>"
+          f.write "<A name='#{bookmark_name}' class='CONV-bookmark-reference'></A>"
 
     onclosetag: (name) ->
       tag_name = html_tags_by_name[name]
@@ -174,9 +174,12 @@ do_body = (push_delegate) ->
         f.write_line '  <script src="../ext/less/less-1.2.2.min.js" type="text/javascript"></script>'
         f.write_line '  <script src="../js.js" type="text/javascript"></script>'
         f.write_line "</HEAD>"
-        f.write_line "<BODY name='#{f.name}' onclick='return handle(event)' onmouseover='return handle(event)' onmouseout='return handle(event)'>\n"
+        f.write_line "<BODY name='#{f.name}'"
+        for hook in ("onclick onmouseover onmouseout".split(' '))
+          f.write_line "    #{hook}='return handle(event)'"
+        f.write_line ">\n"
         f.write_line "<div id='text-data' data-export-date='#{export_date}'></div>" if f is f_text
-        f.write_line "<DIV class='scroll-container'>"
+        f.write_line "<DIV class='scroll-container' onscroll='return handle(event)'>"
         f.write_line "<DIV class='scroll-content'>"
 
 
