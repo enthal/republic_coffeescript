@@ -42,6 +42,7 @@ window.handle = (event) ->
       mouseout:  -> console.log "mouseout"
     'scroll-container':
       scroll: ->
+        return unless event.target.offsetParent.attributes.name.value is "text"
         scrollTop = event.target.scrollTop
         scrollBottom = scrollTop + event.target.offsetParent.clientHeight
         bmrs = get_iframe_doc("text").getElementsByClassName("CONV-bookmark-reference")  # TODO IE polyfill
