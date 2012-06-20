@@ -1,3 +1,5 @@
+# Here is a worker; I love workers!!
+
 aws = require 'aws-lib'
 
 sqs = aws.createSQSClient(
