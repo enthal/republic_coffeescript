@@ -1,28 +1,24 @@
-aws = require ('aws-lib')
+aws = require 'aws-lib'
 
-access_key_id     = "AKIAIR4Y6GNQFCN4T7UA"
-secret_access_key = "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"
+sqs = aws.createSQSClient(
+  process.env.AWS_ACCESS_KEY_ID,
+  process.env.AWS_SECRET_ACCESS_KEY,
+  path: "/633453528193/megillah" )
 
-options = {
-  "path" : "/633453528193/megillah"
-}
+if false
+  outbound =
+    MessageBody : JSON.stringify(
+      data: "Test Message from nodejs worker",
+      timestamp: new Date().getTime()
+      )
 
-sqs = aws.createSQSClient(access_key_id, secret_access_key, options)
-
-#outbound = {
-#  MessageBody : JSON.stringify({
-#    data: "Test Message from nodejs worker",
-#    timestamp: new Date().getTime()
-#    })
-#}
-
-#sqs.call "SendMessage", outbound, (err, result) ->
-#  if err then console.log "SendMessage error: #{err}"
-#  console.log result
+  sqs.call "SendMessage", outbound, (err, result) ->
+    if err then console.log "SendMessage error: #{err}"
+    console.log result
 
 sqs.call "ReceiveMessage", {}, (err, result) ->
   if err then console.log "ReceiveMessage error: #{err}"
-  #console.log result
+  console.log result
   message = result.ReceiveMessageResult.Message
   return unless message
   #console.log message
