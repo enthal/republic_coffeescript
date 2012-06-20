@@ -1,1 +1,1 @@
-worker: node worker.coffee
+worker: coffee worker.coffee
