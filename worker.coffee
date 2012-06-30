@@ -26,4 +26,4 @@ poll_sqs = ->
 
       console.log 'ok!'
 
-setInterval poll_sqs, 2*1000
+setInterval poll_sqs, (process.env.POLL_INTERVAL_SECS or 10) * 1000
