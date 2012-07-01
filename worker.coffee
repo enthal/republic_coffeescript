@@ -13,17 +13,28 @@ coffee_script = require 'coffee-script'
 
 ooxml = require './ooxml'
 
+console.log "using AWS_ACCESS_KEY_ID #{process.env.AWS_ACCESS_KEY_ID}"
+
 sqs = aws.createSQSClient(
   process.env.AWS_ACCESS_KEY_ID,
   process.env.AWS_SECRET_ACCESS_KEY,
   path: "/633453528193/megillah" )
 
-s3 = knox.createClient(
-  key: process.env.AWS_ACCESS_KEY_ID,
-  secret: process.env.AWS_SECRET_ACCESS_KEY,
-  bucket: process.env.S3_BUCKET or 'tjames-x' )
 
 pull_and_process = (repo_url) ->
+  console.log "Handling repo #{repo_url}"
+  s3_bucket = switch repo_url.split('/')[-2..-1].join('/')  # e.g.: github_user/repo_name.git
+    when 'kquandt/commentary.git' then   'www.onplatosrepublic.com'
+    when 'enthal/commentary.git'  then 'stage.onplatosrepublic.com'
+    when 'enthal/ignore.git'      then 'tjames-ignore'
+    else throw "Sorry I'm not made to handle repo_url #{repo_url}"
+  console.log "Outputting to S3 bucket #{s3_bucket}"
+
+  s3 = knox.createClient(
+    key: process.env.AWS_ACCESS_KEY_ID,
+    secret: process.env.AWS_SECRET_ACCESS_KEY,
+    bucket: s3_bucket )
+
   temp_dir = path.join "/tmp", crypto.randomBytes(4).toString('hex')
   git_clone_command = "git clone --depth=1 #{repo_url} #{temp_dir}"
   console.log git_clone_command
