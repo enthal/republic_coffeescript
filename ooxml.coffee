@@ -30,10 +30,10 @@ reader = sax_reader.attach parser,
 
 do_office_meta = (push_delegate) ->
   push_delegate
-    onopentag: (node, push_delegate) -> 
+    onopentag: (node, push_delegate) ->
       if node.name is "dc:date"
         push_delegate
-          ontext: (text) -> 
+          ontext: (text) ->
             export_date = text
 
 do_font_face_decls = (push_delegate) ->
@@ -208,8 +208,9 @@ output_file = (name, extension='html') ->
   write      : (s) -> fs.writeSync f, s
   write_line : (s) -> fs.writeSync f, s + "\n"
 
+exports.run = run = (input_filename) ->
+  parser.write(fs.readFileSync input_filename, 'utf-8').close()
 
-
-log process.argv
-xml_str = fs.readFileSync(process.argv[2])
-parser.write(xml_str.toString()).close()
+unless module.parent
+  log process.argv
+  run process.argv[2]
