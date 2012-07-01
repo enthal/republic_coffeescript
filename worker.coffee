@@ -26,19 +26,30 @@ pull_and_process = (repo_url) ->
   temp_dir = path.join "/tmp", crypto.randomBytes(4).toString('hex')
   child_process.exec "git clone --depth=1 #{repo_url} #{temp_dir}", (error, stdout, stderr) ->
     util.puts(error, "stdout:", stdout, "stderr:", stderr)
-    #child_process.exec("git status", (error, stdout, stderr) -> util.puts(error, "stdout:", stdout, "stderr:", stderr) )
 
     xml_filename = path.join temp_dir, 'RepublicCommentary_Quandt.xml'
-    s3.putFile xml_filename, "xml.xml", (err,res) -> console.log "S3 put result", err, res.statusCode
 
     ooxml.run xml_filename  # synchronous
 
     console.log "Done converting"
+    child_process.exec("rm -r #{temp_dir}")
+
+    # TODO: don't output into decendent of app (cwd) directory (./public/OUT), but into a temp dir we can remove!
     console.log fs.readdirSync 'public'
     console.log fs.readdirSync 'public/OUT'
 
-    child_process.exec("rm -r #{temp_dir}")
+    for_each_file 'public', (filename) ->
+      console.log "UPLOAD #{filename} ..."
+      #s3_path = path.join(filename.split(path.sep)[1..-1]...)
+      s3_path = filename[("public/".length)..-1]
+      s3.putFile filename, s3_path, (err,res) -> console.log "UPLOAD #{filename} (#{s3_path}) END: ", err, res.statusCode
 
+for_each_file = (dir_name, on_each_f) ->
+  for name in fs.readdirSync dir_name
+    full_name = path.join dir_name, name
+    stat = fs.statSync full_name
+    on_each_f full_name if stat.isFile()
+    for_each_file full_name, on_each_f if stat.isDirectory()
 
 poll_sqs = ->
   sqs.call "ReceiveMessage", {}, (err, result) ->
