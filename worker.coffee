@@ -1,3 +1,5 @@
+#! /usr/bin/env coffee
+
 #log = console.log
 crypto = require 'crypto'
 fs = require 'fs'
@@ -21,6 +23,7 @@ s3 = knox.createClient(
   bucket: 'tjames-x' )
 
 console.log process.cwd()
+console.log fs.readdirSync '.'
 
 #child_process.exec("git status", (error, stdout, stderr) -> util.puts(error, "stdout:", stdout, "stderr:", stderr) )
 
@@ -34,6 +37,10 @@ pull_and_process = (repo_url) ->
     s3.putFile xml_filename, "xml.xml", (err,res) -> console.log "S3 put result", err, res.statusCode
 
     ooxml.run xml_filename  # synchronous
+
+    console.log "Done converting"
+    console.log fs.readdirSync 'public'
+    console.log fs.readdirSync 'public/OUT'
 
     child_process.exec("rm -r #{temp_dir}")
 
