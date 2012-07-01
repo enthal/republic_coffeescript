@@ -6,11 +6,18 @@ child_process = require 'child_process'
 path = require 'path'
 
 aws = require 'aws-lib'
+knox = require 'knox'
 
 sqs = aws.createSQSClient(
   process.env.AWS_ACCESS_KEY_ID,
   process.env.AWS_SECRET_ACCESS_KEY,
   path: "/633453528193/megillah" )
+
+s3 = knox.createClient(
+  key: process.env.AWS_ACCESS_KEY_ID,
+  secret: process.env.AWS_SECRET_ACCESS_KEY,
+  bucket: 'tjames-x' )
+
 
 #child_process.exec("git status", (error, stdout, stderr) -> util.puts(error, "stdout:", stdout, "stderr:", stderr) )
 
@@ -20,9 +27,12 @@ pull_and_process = (repo_url) ->
     util.puts(error, "stdout:", stdout, "stderr:", stderr)
     #child_process.exec("git status", (error, stdout, stderr) -> util.puts(error, "stdout:", stdout, "stderr:", stderr) )
 
-    buf = fs.readFileSync path.join temp_dir, 'RepublicCommentary_Quandt.xml'
+    xml_filename = path.join temp_dir, 'RepublicCommentary_Quandt.xml'
+    buf = fs.readFileSync xml_filename
     console.log buf.length
     console.log buf.slice(0, Math.min(1000, buf.length)).toString()
+
+    s3.putFile(xml_filename, "xml.xml", (err,res)->console.log("S3 put result", err, res.statusCode))
 
     child_process.exec("rm -r #{temp_dir}")
 
