@@ -9,6 +9,7 @@ path = require 'path'
 
 aws = require 'aws-lib'
 knox = require 'knox'
+coffee_script = require 'coffee-script'
 
 ooxml = require './ooxml'
 
@@ -38,11 +39,24 @@ pull_and_process = (repo_url) ->
     console.log fs.readdirSync 'public'
     console.log fs.readdirSync 'public/OUT'
 
+    count = 0
     for_each_file 'public', (filename) ->
-      console.log "UPLOAD #{filename} ..."
-      #s3_path = path.join(filename.split(path.sep)[1..-1]...)
       s3_path = filename[("public/".length)..-1]
-      s3.putFile filename, s3_path, (err,res) -> console.log "UPLOAD #{filename} (#{s3_path}) END: ", err, res.statusCode
+      if '.coffee' == path.extname filename
+        console.log "COMPILE #{filename} ..."
+        compiled_text = coffee_script.compile fs.readFileSync(filename).toString()
+        s3_path = s3_path.replace /\.coffee$/, '.js'
+        console.log "... UPLOAD #{s3_path} ;"
+        s3.put s3_path,
+          'Content-Length': compiled_text.length,
+          'Content-Type': 'application/javascript'
+        .end(compiled_text)  # TODO: count++/count-- with potential logging in a response handler
+      else
+        console.log "UPLOAD #{filename} (#{s3_path}) ..."
+        count++
+        s3.putStream fs.createReadStream(filename), s3_path, (err,res) ->
+          console.log "... UP #{filename} (#{s3_path}) END: ", err, res.statusCode
+          console.log "ALL DONE!"  unless --count
 
 for_each_file = (dir_name, on_each_f) ->
   for name in fs.readdirSync dir_name
