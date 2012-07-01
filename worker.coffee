@@ -1,3 +1,10 @@
+#log = console.log
+crypto = require 'crypto'
+fs = require 'fs'
+util = require 'util'
+child_process = require 'child_process'
+path = require 'path'
+
 aws = require 'aws-lib'
 
 sqs = aws.createSQSClient(
@@ -5,24 +12,19 @@ sqs = aws.createSQSClient(
   process.env.AWS_SECRET_ACCESS_KEY,
   path: "/633453528193/megillah" )
 
-crypto = require 'crypto'
-fs = require 'fs'
-util = require 'util'
-exec = require('child_process').exec
-exec("git status", (error, stdout, stderr) -> util.puts(error, "stdout:", stdout, "stderr:", stderr) )
-temp_dir = "/tmp/#{crypto.randomBytes(4).toString('hex')}"
-fs.mkdirSync temp_dir
-process.chdir temp_dir
+#child_process.exec("git status", (error, stdout, stderr) -> util.puts(error, "stdout:", stdout, "stderr:", stderr) )
 
-#git_command = 'git clone --depth=1 git://github.com/enthal/ignore.git'
-git_command = 'git clone --depth=1 git://github.com/kquandt/commentary.git'
-exec git_command, (error, stdout, stderr) ->
-  util.puts(error, "stdout:", stdout, "stderr:", stderr)
-  process.chdir "./commentary"
-  #exec("git status", (error, stdout, stderr) -> util.puts(error, "stdout:", stdout, "stderr:", stderr) )
-  buf = fs.readFileSync('RepublicCommentary_Quandt.xml')
-  console.log buf.length
-  console.log buf.slice(0,100).toString()
+pull_and_process = (repo_url) ->
+  temp_dir = path.join "/tmp", crypto.randomBytes(4).toString('hex')
+  child_process.exec "git clone --depth=1 #{repo_url} #{temp_dir}", (error, stdout, stderr) ->
+    util.puts(error, "stdout:", stdout, "stderr:", stderr)
+    #child_process.exec("git status", (error, stdout, stderr) -> util.puts(error, "stdout:", stdout, "stderr:", stderr) )
+
+    buf = fs.readFileSync path.join temp_dir, 'RepublicCommentary_Quandt.xml'
+    console.log buf.length
+    console.log buf.slice(0, Math.min(1000, buf.length)).toString()
+
+    child_process.exec("rm -r #{temp_dir}")
 
 
 poll_sqs = ->
@@ -35,16 +37,20 @@ poll_sqs = ->
       return
     #console.log message
     try
-      info = JSON.parse message.Body
-      console.log info
+      body = JSON.parse message.Body
+      #console.log body
+      repo = body.repository
+      console.log body.pusher, repo.name, repo.url
+      console.log body.head_commit.message
+      pull_and_process "#{repo.url}.git"
     catch error
       console.log error
     finally
+      # TODO: delete only after processing complete!  Re-enqueue on fail?
       sqs.call "DeleteMessage", {ReceiptHandle:message.ReceiptHandle}, (err, result) ->
         if err
           console.log "DeleteMessage error: #{err}"
 
       console.log 'ok!'
-      exec("git status", (error, stdout, stderr) -> util.puts(error, stdout.length, stderr.length) )
 
 setInterval poll_sqs, (process.env.POLL_INTERVAL_SECS or 10) * 1000
