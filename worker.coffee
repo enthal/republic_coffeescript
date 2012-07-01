@@ -5,9 +5,21 @@ sqs = aws.createSQSClient(
   process.env.AWS_SECRET_ACCESS_KEY,
   path: "/633453528193/megillah" )
 
-sys = require('sys')
+crypto = require 'crypto'
+fs = require 'fs'
+util = require 'util'
 exec = require('child_process').exec
-exec("git status", (error, stdout, stderr) -> sys.puts(error, "stdout:", stdout, "stderr:", stderr) )
+exec("git status", (error, stdout, stderr) -> util.puts(error, "stdout:", stdout, "stderr:", stderr) )
+#git_command = 'git clone --depth=1 git://github.com/kquandt/commentary.git com5'
+temp_dir = "/tmp/#{crypto.randomBytes(4).toString('hex')}"
+fs.mkdirSync temp_dir
+process.chdir temp_dir
+git_command = 'git clone --depth=1 git://github.com/enthal/ignore.git'
+exec git_command, (error, stdout, stderr) ->
+  util.puts(error, "stdout:", stdout, "stderr:", stderr)
+  process.chdir "./ignore"
+  exec("git status", (error, stdout, stderr) -> util.puts(error, "stdout:", stdout, "stderr:", stderr) )
+  console.log fs.readFileSync('README.md').toString()
 
 
 poll_sqs = ->
@@ -30,6 +42,6 @@ poll_sqs = ->
           console.log "DeleteMessage error: #{err}"
 
       console.log 'ok!'
-      exec("git status", (error, stdout, stderr) -> sys.puts(error, stdout.length, stderr.length) )
+      exec("git status", (error, stdout, stderr) -> util.puts(error, stdout.length, stderr.length) )
 
 setInterval poll_sqs, (process.env.POLL_INTERVAL_SECS or 10) * 1000
