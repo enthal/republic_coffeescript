@@ -20,12 +20,7 @@ sqs = aws.createSQSClient(
 s3 = knox.createClient(
   key: process.env.AWS_ACCESS_KEY_ID,
   secret: process.env.AWS_SECRET_ACCESS_KEY,
-  bucket: 'tjames-x' )
-
-console.log process.cwd()
-console.log fs.readdirSync '.'
-
-#child_process.exec("git status", (error, stdout, stderr) -> util.puts(error, "stdout:", stdout, "stderr:", stderr) )
+  bucket: process.env.S3_BUCKET or 'tjames-x' )
 
 pull_and_process = (repo_url) ->
   temp_dir = path.join "/tmp", crypto.randomBytes(4).toString('hex')
