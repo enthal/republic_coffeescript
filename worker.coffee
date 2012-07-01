@@ -25,21 +25,31 @@ s3 = knox.createClient(
 
 pull_and_process = (repo_url) ->
   temp_dir = path.join "/tmp", crypto.randomBytes(4).toString('hex')
-  child_process.exec "git clone --depth=1 #{repo_url} #{temp_dir}", (error, stdout, stderr) ->
-    util.puts(error, "stdout:", stdout, "stderr:", stderr)
+  git_clone_command = "git clone --depth=1 #{repo_url} #{temp_dir}"
+  console.log git_clone_command
+  child_process.exec git_clone_command, (error, stdout, stderr) ->
+    console.log stdout
+    console.log "error:", error, "stderr:", stderr  if error or stderr
 
     xml_filename = path.join temp_dir, 'RepublicCommentary_Quandt.xml'
-
+    console.log "converting #{xml_filename} into public/OUT/ ..."
     ooxml.run xml_filename  # synchronous
-
-    console.log "Done converting"
-    child_process.exec("rm -r #{temp_dir}")
+    console.log "Done converting!"
 
     # TODO: don't output into decendent of app (cwd) directory (./public/OUT), but into a temp dir we can remove!
-    console.log fs.readdirSync 'public'
-    console.log fs.readdirSync 'public/OUT'
 
     count = 0
+    s3_put_file_as_stream = (filename, s3_path) ->
+        console.log "UPLOAD #{filename} (#{s3_path}) ..."
+        count++
+        s3.putStream fs.createReadStream(filename), s3_path, (err,res) ->
+          console.log "... UP #{filename} (#{s3_path}) END: ", err, res.statusCode
+          unless --count
+            console.log "ALL DONE!"
+            child_process.exec("rm -r #{temp_dir}")  # this is a hack, doing this here; but it's the only way to be sure the pdf sticks around
+
+    s3_put_file_as_stream path.join(temp_dir, 'RepublicCommentary_Quandt.pdf'), 'RepublicCommentary_Quandt.pdf'
+
     for_each_file 'public', (filename) ->
       s3_path = filename[("public/".length)..-1]
       if '.coffee' == path.extname filename
@@ -50,13 +60,9 @@ pull_and_process = (repo_url) ->
         s3.put s3_path,
           'Content-Length': compiled_text.length,
           'Content-Type': 'application/javascript'
-        .end(compiled_text)  # TODO: count++/count-- with potential logging in a response handler
+        .end(compiled_text)  # TODO: count++/count-- with potential logging in a response handler ala s3_put_file_as_stream
       else
-        console.log "UPLOAD #{filename} (#{s3_path}) ..."
-        count++
-        s3.putStream fs.createReadStream(filename), s3_path, (err,res) ->
-          console.log "... UP #{filename} (#{s3_path}) END: ", err, res.statusCode
-          console.log "ALL DONE!"  unless --count
+        s3_put_file_as_stream filename, s3_path
 
 for_each_file = (dir_name, on_each_f) ->
   for name in fs.readdirSync dir_name
