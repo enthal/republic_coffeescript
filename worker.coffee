@@ -13,12 +13,19 @@ coffee_script = require 'coffee-script'
 
 ooxml = require './ooxml'
 
-console.log "using AWS_ACCESS_KEY_ID #{process.env.AWS_ACCESS_KEY_ID}"
+console.log "====================================================="
+console.log "=================== STARTING! ======================="
+console.log "====================================================="
+(console.log "      #{k} : #{v}" unless k is 'AWS_SECRET_ACCESS_KEY') for k,v of process.env
+
+sqs_path = "/633453528193/megillah"
+sqs_path += "-test" unless process.env.PRODUCTION
+console.log "using sqs_path #{sqs_path}"
 
 sqs = aws.createSQSClient(
   process.env.AWS_ACCESS_KEY_ID,
   process.env.AWS_SECRET_ACCESS_KEY,
-  path: "/633453528193/megillah" )
+  path: sqs_path )
 
 
 pull_and_process = (repo_url) ->
@@ -36,7 +43,7 @@ pull_and_process = (repo_url) ->
     bucket: s3_bucket )
 
   temp_dir = path.join "/tmp", crypto.randomBytes(4).toString('hex')
-  git_clone_command = "git clone --depth=1 #{repo_url} #{temp_dir}"
+  git_clone_command = "git clone --depth=1 #{repo_url} #{temp_dir} && cd #{temp_dir} && git log -1"
   console.log git_clone_command
   child_process.exec git_clone_command, (error, stdout, stderr) ->
     console.log stdout
@@ -95,7 +102,9 @@ poll_sqs = ->
       body = JSON.parse message.Body
       #console.log body
       repo = body.repository
+      console.log "========================== GOT MESSAGE"
       console.log body.pusher, repo.name, repo.url
+      console.log repo.pushed_at, body.after, body.ref
       console.log body.head_commit.message
       pull_and_process "#{repo.url}.git"
     catch error
