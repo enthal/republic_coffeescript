@@ -114,6 +114,8 @@ poll_sqs = ->
       sqs.call "DeleteMessage", {ReceiptHandle:message.ReceiptHandle}, (err, result) ->
         if err
           console.log "DeleteMessage error: #{err}"
+        else
+          console.log "message deleted"  # TODO: wait till success for this!
 
       console.log 'ok!'
 
