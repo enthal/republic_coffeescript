@@ -92,7 +92,7 @@ for_each_file = (dir_name, on_each_f) ->
 poll_sqs = ->
   sqs.call "ReceiveMessage", {}, (err, result) ->
     if err then console.log "ReceiveMessage error: #{err}"
-    #console.log result
+    console.log result
     message = result.ReceiveMessageResult.Message
     unless message
       console.log "no message this time"
