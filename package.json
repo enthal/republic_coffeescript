@@ -2,7 +2,7 @@
   "name": "megillah",
   "version": "0.0.1",
   "scripts": {
-    "start": "coffee "
+    "start": "coffee ./ooxml.coffee"
   },
   "engines": {
     "node": "10.14.x",
