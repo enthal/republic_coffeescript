@@ -1,13 +1,16 @@
 {
   "name": "megillah",
   "version": "0.0.1",
+  "scripts": {
+    "start": "coffee "
+  },
   "engines": {
-    "node": "0.6.x",
-    "npm":  "1.1.x"
+    "node": "10.14.x",
+    "npm": "6.4.x"
   },
   "dependencies": {
-    "coffee-script": "1.1.3",
-    "aws-lib": "0.0.6",
+    "coffeescript": "2.3.2",
+    "aws-lib": "0.3.0",
     "knox": "0.0.9",
     "sax": "0.4.0"
   }
