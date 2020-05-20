@@ -3,8 +3,14 @@
 fs = require "fs"
 log = console.log
 parser = require("sax").parser true
-
 sax_reader = require("./sax_reader")
+
+out_path = "public/OUT/"
+
+exports.run = run = (input_filename) ->
+  log "output to:", "public/OUT/"
+  parser.write(fs.readFileSync input_filename, 'utf-8').close()
+
 
 font_families_by_style_name = {}
 export_date = null
@@ -200,16 +206,12 @@ local_name = (name) ->
   m? and m[1] or name
 
 output_file = (name, extension='html') ->
-  out_path = "public/OUT/"
   try fs.mkdirSync out_path
   f = fs.openSync "#{out_path}/#{name}.#{extension}", "w+"
 
   name       : name
   write      : (s) -> fs.writeSync f, s
   write_line : (s) -> fs.writeSync f, s + "\n"
-
-exports.run = run = (input_filename) ->
-  parser.write(fs.readFileSync input_filename, 'utf-8').close()
 
 unless module.parent
   log process.argv
