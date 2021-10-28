@@ -3,3 +3,4 @@ WORK
 .DS_Store
 *.js
 node_modules
+.idea
