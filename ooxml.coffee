@@ -7,18 +7,21 @@ sax_reader = require("./sax_reader")
 
 out_path = "public/OUT/"
 
-exports.run = run = (input_filename) ->
-  log "output to:", "public/OUT/"
-  parser.write(fs.readFileSync input_filename, 'utf-8').close()
+exports.run = run = (input_filenames) ->
+  log "output to:", out_path
+  sax_reader.attach parser, make_top_delegate(output_file "styles", "less")
+  for input_filename in input_filenames
+    log "• processing: #{input_filename} ..."
+    parser.write(fs.readFileSync input_filename, 'utf-8').close()
+  log "done"
 
 
 font_families_by_style_name = {}
 export_date = null
 
-reader = sax_reader.attach parser,
+make_top_delegate = (f_style) ->
   onopentag: (node, push_delegate) ->
-    throw "Need: <office:document> not <#{node.name}>" unless node.name is "office:document"
-    f_style = output_file "styles", "less"
+    throw "Need: <office:document> not <#{node.name}>" unless /^office:document-/i.test node.name
 
     push_delegate
       onopentag: (node, push_delegate) ->
@@ -27,7 +30,7 @@ reader = sax_reader.attach parser,
             do_office_meta push_delegate
           when "office:font-face-decls"
             do_font_face_decls push_delegate
-          when "office:styles", "office:automatic-styles"
+          when "office:styles", "office:automatic-styles", "office:master-styles"
             do_styles f_style, push_delegate
           when "office:body"
             do_body push_delegate
@@ -37,7 +40,7 @@ reader = sax_reader.attach parser,
 do_office_meta = (push_delegate) ->
   push_delegate
     onopentag: (node, push_delegate) ->
-      if node.name is "dc:date"
+      if node.name is "dc:date" # TODO: Why isn't it finding this?
         push_delegate
           ontext: (text) ->
             export_date = text
@@ -215,4 +218,4 @@ output_file = (name, extension='html') ->
 
 unless module.parent
   log process.argv
-  run process.argv[2]
+  run process.argv[2..]
