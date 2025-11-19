@@ -21,7 +21,7 @@ export_date = null
 
 make_top_delegate = (f_style) ->
   onopentag: (node, push_delegate) ->
-    throw "Need: <office:document> not <#{node.name}>" unless /^office:document-/i.test node.name
+    throw "Need: <office:document-*> not <#{node.name}>" unless /^office:document-/i.test node.name
 
     push_delegate
       onopentag: (node, push_delegate) ->
