@@ -7,7 +7,17 @@ New way:
 coffee -c public/
 
 RCQ=~/Downloads/RepublicCommentaryQuandt/
-npm start -- $RCQ/content.xml $RCQ/meta.xml $RCQ/styles.xml
+npm start -- $RCQ/meta.xml $RCQ/styles.xml $RCQ/content.xml
+```
+
+Serve content locally:
+```shell
+(cd public && python3 -m http.server 8000)
+```
+
+Upload to S3:
+```shell
+aws s3 cp public/ s3://stage.onplatosrepublic.com/ --recursive
 ```
 
 Be aware of coffee compiler watch mode:
@@ -17,7 +27,7 @@ coffee -cw public/
 
 Don't forget to put the PDF `RepublicCommentary_Quandt.pdf` to S3!
 
-Old style:
+Old single-file format:
 ```shell
 npm start -- ../githubRepublic/RepublicCommentary_Quandt.xml
 ```
