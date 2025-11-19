@@ -40,7 +40,7 @@ make_top_delegate = (f_style) ->
 do_office_meta = (push_delegate) ->
   push_delegate
     onopentag: (node, push_delegate) ->
-      if node.name is "dc:date" # TODO: Why isn't it finding this?
+      if node.name is "dc:date"
         push_delegate
           ontext: (text) ->
             export_date = text
