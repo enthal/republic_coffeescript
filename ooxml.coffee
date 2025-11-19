@@ -12,7 +12,8 @@ exports.run = run = (input_filenames) ->
   sax_reader.attach parser, make_top_delegate(output_file "styles", "less")
   for input_filename in input_filenames
     log "• processing: #{input_filename} ..."
-    parser.write(fs.readFileSync input_filename, 'utf-8').close()
+    parser.write(fs.readFileSync input_filename, 'utf-8')
+  parser.close()
   log "done"
 
 
