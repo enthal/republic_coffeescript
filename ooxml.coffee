@@ -44,6 +44,7 @@ do_office_meta = (push_delegate) ->
         push_delegate
           ontext: (text) ->
             export_date = text
+            log "    • got export_date:", export_date
 
 do_font_face_decls = (push_delegate) ->
   push_delegate
@@ -188,11 +189,12 @@ do_body = (push_delegate) ->
         for hook in ("onclick onmouseover onmouseout".split(' '))
           f.write_line "    #{hook}='return handle(event)'"
         f.write_line ">\n"
-        f.write_line "<div id='text-data' data-export-date='#{export_date}'></div>" if f is f_text
+        if f is f_text
+          unless export_date?
+            log "⚠️ WARNING: export_date is null; did you forget to run with the meta.xml file listed before content.xml?"
+          f.write_line "<div id='text-data' data-export-date='#{export_date}'></div>" 
         f.write_line "<DIV class='scroll-container' onscroll='return handle(event)'>"
         f.write_line "<DIV class='scroll-content'>"
-
-
 
     outer_body_delegate.onleave = ->
       for f in [f_text, f_note, f_contents, f_bookmarks]
