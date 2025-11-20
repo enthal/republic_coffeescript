@@ -69,7 +69,7 @@ do_styles = (f_style, push_delegate) ->
           onopentag: (node) ->
             for n,v of node.attributes
               m = n.match /^fo:(.*)/
-              f_style.write_line "  #{m[1]}: #{v};"  if m
+              f_style.write_line "  #{m[1]}: #{v};"  if m and not (style_name is "Standard" and m[1].match /^margin-/i)
               font_family = font_families_by_style_name[v]
               f_style.write_line "  font-family: #{font_family};" if n is "style:font-name"
 
