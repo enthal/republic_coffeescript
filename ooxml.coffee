@@ -85,6 +85,7 @@ do_body = (push_delegate) ->
       "text:p":    "div"
       "text:h":    "div"
       "text:span": "span"
+      "text:a":    "a"
     header_i = 0
 
     collected_texts: []
@@ -97,6 +98,7 @@ do_body = (push_delegate) ->
       tag_name = html_tags_by_name[node.name]
       if tag_name
         css_classes = [node.attributes["text:style-name"]]
+        attrs = {}
         switch node.name
           when "text:h"
             header_i++
@@ -117,11 +119,14 @@ do_body = (push_delegate) ->
           when "text:p"
             if mode is "note"
               css_classes = ["Footnote"]
+          when "text:a"
+            attrs["href"] = node.attributes["xlink:href"]  if node.attributes["xlink:href"]?
 
         tag = ""
         tag += "\n" unless tag_name is "span"  # Only allow extra ws around block element tags, else browser shows it
         tag += "<#{tag_name}"
         tag += " class='#{css_classes.join ' '}'" if css_classes.length
+        tag += " #{k}='#{v}'"  for k,v of attrs
         tag += ">"
         f.write tag
 
@@ -138,10 +143,12 @@ do_body = (push_delegate) ->
           push_delegate make_body_delegate(f_note)
         when "text:bookmark-start"
           bookmark_id = node.attributes["text:name"]
-          if not bookmark_id.startsWith "_"
+          if bookmark_id.startsWith "_"
+            bookmark_name = bookmark_id
+          else
             bookmark_name = "bookmark_#{bookmark_id}"
             f_bookmarks.write "\n<div class='CONV-bookmark' name='#{bookmark_name}'><A href='text.html\##{bookmark_name}' target='text' class='CONV-bookmark-ref'>#{bookmark_id}</A></div>"
-            f.write "<A name='#{bookmark_name}' class='CONV-bookmark-reference'></A>"
+          f.write "<A name='#{bookmark_name}' class='CONV-bookmark-reference'></A>"
 
     onclosetag: (name) ->
       tag_name = html_tags_by_name[name]
