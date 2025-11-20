@@ -79,7 +79,8 @@ do_body = (push_delegate) ->
   f_contents  = output_file "contents"
   f_bookmarks = output_file "bookmarks"
 
-  make_body_delegate = (f) ->
+  make_body_delegate = (f, opts={}) ->
+    mode = opts.mode
     html_tags_by_name =
       "text:p":    "div"
       "text:h":    "div"
@@ -96,25 +97,27 @@ do_body = (push_delegate) ->
       tag_name = html_tags_by_name[node.name]
       if tag_name
         css_classes = [node.attributes["text:style-name"]]
-        if node.name is "text:h"
-          header_i++
-          header_name = "header_#{header_i}"
-          css_level_class = "CONV-level-#{node.attributes["text:outline-level"]}"
-          css_classes.push "CONV-header"
-          css_classes.push css_level_class
+        switch node.name
+          when "text:h"
+            header_i++
+            header_name = "header_#{header_i}"
+            css_level_class = "CONV-level-#{node.attributes["text:outline-level"]}"
+            css_classes.push "CONV-header"
+            css_classes.push css_level_class
+            header_delegate = make_body_delegate f
+            header_delegate.onleave = ->
+              item = ""
+              item += "<div"
+              item += " class='CONV-content-tile #{css_level_class}'>"
+              item += "<A href='text.html\##{header_name}' target='text'>"
+              item += @collected_texts.join ''
+              item += "</A></div>"
+              f_contents.write_line item
+            push_delegate header_delegate
+          when "text:p"
+            if mode is "note"
+              css_classes = ["Footnote"]
 
-          header_delegate = make_body_delegate f
-          header_delegate.onleave = ->
-            item = ""
-            item += "<div"
-            item += " class='CONV-content-tile #{css_level_class}'>"
-            item += "<A href='text.html\##{header_name}' target='text'>"
-            item += @collected_texts.join ''
-            item += "</A></div>"
-            f_contents.write_line item
-          push_delegate header_delegate
-
-        style_name = node.attributes["text:style-name"]
         tag = ""
         tag += "\n" unless tag_name is "span"  # Only allow extra ws around block element tags, else browser shows it
         tag += "<#{tag_name}"
@@ -126,6 +129,8 @@ do_body = (push_delegate) ->
           f.write "<A name='#{header_name}'>"
 
       else switch node.name
+        when "text:tab"
+          f.write " — " # TODO
         when "text:note"
           push_delegate make_note_delegate()
         when "text:note-ref"
@@ -162,7 +167,7 @@ do_body = (push_delegate) ->
           f_note.write "\n<div class='CONV-note' name='note-#{note_id}'>\n"
           f_note.write "<A href='text.html\##{note_id}' target='text' name='#{note_id}' class='CONV-note-identifier'>"
         when "text:note-body"
-          push_delegate make_body_delegate(f_note)
+          push_delegate make_body_delegate(f_note, {mode: "note"})
 
     onclosetag: (name) ->
       switch name
