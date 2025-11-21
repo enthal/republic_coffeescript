@@ -7,18 +7,22 @@ sax_reader = require("./sax_reader")
 
 out_path = "public/OUT/"
 
-exports.run = run = (input_filename) ->
-  log "output to:", "public/OUT/"
-  parser.write(fs.readFileSync input_filename, 'utf-8').close()
+exports.run = run = (input_filenames) ->
+  log "output to:", out_path
+  sax_reader.attach parser, make_top_delegate(output_file "styles", "less")
+  for input_filename in input_filenames
+    log "• processing: #{input_filename} ..."
+    parser.write(fs.readFileSync input_filename, 'utf-8')
+  parser.close()
+  log "done"
 
 
 font_families_by_style_name = {}
 export_date = null
 
-reader = sax_reader.attach parser,
+make_top_delegate = (f_style) ->
   onopentag: (node, push_delegate) ->
-    throw "Need: <office:document> not <#{node.name}>" unless node.name is "office:document"
-    f_style = output_file "styles", "less"
+    throw "Need: <office:document-*> not <#{node.name}>" unless /^office:document-/i.test node.name
 
     push_delegate
       onopentag: (node, push_delegate) ->
@@ -27,7 +31,7 @@ reader = sax_reader.attach parser,
             do_office_meta push_delegate
           when "office:font-face-decls"
             do_font_face_decls push_delegate
-          when "office:styles", "office:automatic-styles"
+          when "office:styles", "office:automatic-styles", "office:master-styles"
             do_styles f_style, push_delegate
           when "office:body"
             do_body push_delegate
@@ -41,6 +45,7 @@ do_office_meta = (push_delegate) ->
         push_delegate
           ontext: (text) ->
             export_date = text
+            log "    • got export_date:", export_date
 
 do_font_face_decls = (push_delegate) ->
   push_delegate
@@ -64,7 +69,7 @@ do_styles = (f_style, push_delegate) ->
           onopentag: (node) ->
             for n,v of node.attributes
               m = n.match /^fo:(.*)/
-              f_style.write_line "  #{m[1]}: #{v};"  if m
+              f_style.write_line "  #{m[1]}: #{v};"  if m and not (style_name is "Standard" and m[1].match /^margin-/i)
               font_family = font_families_by_style_name[v]
               f_style.write_line "  font-family: #{font_family};" if n is "style:font-name"
 
@@ -74,11 +79,13 @@ do_body = (push_delegate) ->
   f_contents  = output_file "contents"
   f_bookmarks = output_file "bookmarks"
 
-  make_body_delegate = (f) ->
+  make_body_delegate = (f, opts={}) ->
+    mode = opts.mode
     html_tags_by_name =
       "text:p":    "div"
       "text:h":    "div"
       "text:span": "span"
+      "text:a":    "a"
     header_i = 0
 
     collected_texts: []
@@ -91,29 +98,35 @@ do_body = (push_delegate) ->
       tag_name = html_tags_by_name[node.name]
       if tag_name
         css_classes = [node.attributes["text:style-name"]]
-        if node.name is "text:h"
-          header_i++
-          header_name = "header_#{header_i}"
-          css_level_class = "CONV-level-#{node.attributes["text:outline-level"]}"
-          css_classes.push "CONV-header"
-          css_classes.push css_level_class
+        attrs = {}
+        switch node.name
+          when "text:h"
+            header_i++
+            header_name = "header_#{header_i}"
+            css_level_class = "CONV-level-#{node.attributes["text:outline-level"]}"
+            css_classes.push "CONV-header"
+            css_classes.push css_level_class
+            header_delegate = make_body_delegate f
+            header_delegate.onleave = ->
+              item = ""
+              item += "<div"
+              item += " class='CONV-content-tile #{css_level_class}'>"
+              item += "<A href='text.html\##{header_name}' target='text'>"
+              item += @collected_texts.join ''
+              item += "</A></div>"
+              f_contents.write_line item
+            push_delegate header_delegate
+          when "text:p"
+            if mode is "note"
+              css_classes = ["Footnote"]
+          when "text:a"
+            attrs["href"] = node.attributes["xlink:href"]  if node.attributes["xlink:href"]?
 
-          header_delegate = make_body_delegate f
-          header_delegate.onleave = ->
-            item = ""
-            item += "<div"
-            item += " class='CONV-content-tile #{css_level_class}'>"
-            item += "<A href='text.html\##{header_name}' target='text'>"
-            item += @collected_texts.join ''
-            item += "</A></div>"
-            f_contents.write_line item
-          push_delegate header_delegate
-
-        style_name = node.attributes["text:style-name"]
         tag = ""
         tag += "\n" unless tag_name is "span"  # Only allow extra ws around block element tags, else browser shows it
         tag += "<#{tag_name}"
         tag += " class='#{css_classes.join ' '}'" if css_classes.length
+        tag += " #{k}='#{v}'"  for k,v of attrs
         tag += ">"
         f.write tag
 
@@ -121,6 +134,8 @@ do_body = (push_delegate) ->
           f.write "<A name='#{header_name}'>"
 
       else switch node.name
+        when "text:tab"
+          f.write " — " # TODO
         when "text:note"
           push_delegate make_note_delegate()
         when "text:note-ref"
@@ -128,8 +143,11 @@ do_body = (push_delegate) ->
           push_delegate make_body_delegate(f_note)
         when "text:bookmark-start"
           bookmark_id = node.attributes["text:name"]
-          bookmark_name = "bookmark_#{bookmark_id}"
-          f_bookmarks.write "\n<div class='CONV-bookmark' name='#{bookmark_name}'><A href='text.html\##{bookmark_name}' target='text' class='CONV-bookmark-ref'>#{bookmark_id}</A></div>"
+          if bookmark_id.startsWith "_"
+            bookmark_name = bookmark_id
+          else
+            bookmark_name = "bookmark_#{bookmark_id}"
+            f_bookmarks.write "\n<div class='CONV-bookmark' name='#{bookmark_name}'><A href='text.html\##{bookmark_name}' target='text' class='CONV-bookmark-ref'>#{bookmark_id}</A></div>"
           f.write "<A name='#{bookmark_name}' class='CONV-bookmark-reference'></A>"
 
     onclosetag: (name) ->
@@ -156,7 +174,7 @@ do_body = (push_delegate) ->
           f_note.write "\n<div class='CONV-note' name='note-#{note_id}'>\n"
           f_note.write "<A href='text.html\##{note_id}' target='text' name='#{note_id}' class='CONV-note-identifier'>"
         when "text:note-body"
-          push_delegate make_body_delegate(f_note)
+          push_delegate make_body_delegate(f_note, {mode: "note"})
 
     onclosetag: (name) ->
       switch name
@@ -184,11 +202,12 @@ do_body = (push_delegate) ->
         for hook in ("onclick onmouseover onmouseout".split(' '))
           f.write_line "    #{hook}='return handle(event)'"
         f.write_line ">\n"
-        f.write_line "<div id='text-data' data-export-date='#{export_date}'></div>" if f is f_text
+        if f is f_text
+          unless export_date?
+            log "⚠️ WARNING: export_date is null; did you forget to run with the meta.xml file listed before content.xml?"
+          f.write_line "<div id='text-data' data-export-date='#{export_date}'></div>" 
         f.write_line "<DIV class='scroll-container' onscroll='return handle(event)'>"
         f.write_line "<DIV class='scroll-content'>"
-
-
 
     outer_body_delegate.onleave = ->
       for f in [f_text, f_note, f_contents, f_bookmarks]
@@ -215,4 +234,4 @@ output_file = (name, extension='html') ->
 
 unless module.parent
   log process.argv
-  run process.argv[2]
+  run process.argv[2..]

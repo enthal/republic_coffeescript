@@ -26,12 +26,14 @@ iframe {
 
   &.bookmarks {
     width:  4%;
+    max-width: 2em;
   }
-  &.contents {
-    width:  20%;
+  &.column-text {
+    width:  60%;
   }
-  &.column {
-    width:  37%;
+  &.column-notes {
+    width:  35%;
+    background-color: #FCFCFC;
   }
 }
 
@@ -47,31 +49,46 @@ iframe {
 }
 
 .credits {
-  text-align: right;
+  // text-align: right;
   font-family: 'Gill Sans', Verdana, Geneva, sans-serif;
   font-weight: 600;
   font-size: 70%;
-  padding-right: 1em;
-  padding-left: 1em;
   color: #666;
   background-color: #CCC;
   a {
     color: #888;
   }
+  span {
+    padding-left: 3em;
+    padding-right: 3em;  
+  }
   #date-display {
-    float: left;
-    padding-left: 2em;
+    // float: left;
     font-weight: 400;
   }
   .quandt-attribution {
-    float: left;
-    padding-left: 4em;
-    padding-right: 4em;
+    // float: left;
     font-weight: 400;
     font-size: 120%;
     color: #000;
     a {
       color: #666;
     }
+  }
+  .download-pdf {
+    float: right;
+    background-color: #AAA;
+    padding-left: 1em;
+    padding-right: 1em;  
+    margin-top: 1px;
+    margin-left: 1em;
+    margin-right: 1em;
+    border-radius: 0.5em;
+    a {
+      color: #444;
+    }
+  }
+  .powered-by {
+    float: right;
   }
 }
